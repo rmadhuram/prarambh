@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problem to Solution — PRARAMBH Deep Dive 2026</title>
+<style>
+  :root {
+    --ink: #1c2333;
+    --ink-soft: #4a5268;
+    --paper: #fbfaf7;
+    --card: #ffffff;
+    --accent: #e8720c;
+    --accent-soft: #fdeedd;
+    --indigo: #2b3a8c;
+    --indigo-soft: #e6e9f7;
+    --green: #1e7d4f;
+    --green-soft: #e2f2e9;
+    --line: #e3e0d8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: #14161d;
+    font-family: -apple-system, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+  }
+  #viewport { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #stage { width: 1280px; height: 720px; position: relative; transform-origin: center center; }
+  .slide {
+    position: absolute; inset: 0;
+    background: var(--paper);
+    border-radius: 6px;
+    padding: 58px 72px 64px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .slide.active { display: flex; }
+
+  .kicker {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+  }
+  h1 { font-size: 64px; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em; }
+  h2 { font-size: 42px; line-height: 1.12; font-weight: 800; letter-spacing: -0.015em; margin-bottom: 26px; }
+  h2 .thin { font-weight: 400; color: var(--ink-soft); }
+  h3 { font-size: 22px; font-weight: 700; }
+  p, li { font-size: 22px; line-height: 1.45; color: var(--ink); }
+  .muted { color: var(--ink-soft); }
+  .small { font-size: 17px; }
+  .accent { color: var(--accent); }
+  b, strong { font-weight: 700; }
+  .content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  .foot {
+    position: absolute; left: 72px; right: 72px; bottom: 22px;
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: #9aa0ae; letter-spacing: 0.06em;
+  }
+  #pagenum { position: absolute; right: 26px; bottom: 20px; font-size: 13px; color: #9aa0ae; }
+  #progress {
+    position: absolute; left: 0; bottom: 0; height: 5px;
+    background: var(--accent); width: 100%;
+    border-radius: 0 3px 3px 0;
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform .25s ease;
+  }
+
+  .cols { display: flex; gap: 36px; }
+  .col { flex: 1; }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 22px 26px;
+    box-shadow: 0 1px 3px rgba(20,22,30,.05);
+  }
+  .tag {
+    display: inline-block; font-size: 14px; font-weight: 700;
+    padding: 3px 12px; border-radius: 999px; letter-spacing: .04em;
+  }
+  .tag.orange { background: var(--accent-soft); color: var(--accent); }
+  .tag.blue   { background: var(--indigo-soft); color: var(--indigo); }
+  .tag.green  { background: var(--green-soft); color: var(--green); }
+  .tag.red    { background: #fbe7e4; color: #b3372c; }
+
+  .iframe-slide { padding: 0; background: #0d0e12; }
+  .iframe-slide .bar {
+    height: 44px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: #14161d; color: #d8d3c8; font-size: 15px;
+  }
+  .iframe-slide .bar b { color: #fff; }
+  .iframe-slide .frame-wrap {
+    position: relative; width: 100%; height: calc(100% - 44px);
+    background: #fff center / cover no-repeat;
+  }
+  .iframe-slide iframe {
+    position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .iframe-slide iframe.on { opacity: 1; }
+
+  .photo-slide { padding: 0; background: #0d0e12; }
+  .photo-slide img { width: 100%; height: 100%; object-fit: cover; opacity: .92; }
+  .photo-slide .caption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(transparent, rgba(10,10,14,.88) 45%);
+    padding: 90px 72px 40px; color: #fff;
+  }
+  .photo-slide .caption h2 { color: #fff; margin-bottom: 8px; font-size: 40px; }
+  .photo-slide .caption p { color: #d8d3c8; font-size: 21px; }
+  .photo-slide .credit { position: absolute; right: 16px; top: 12px; font-size: 11px; color: rgba(255,255,255,.55); }
+
+  .section-slide { background: var(--indigo); color: #fff; }
+  .section-slide .kicker { color: #ffb066; }
+  .section-slide h1 { color: #fff; font-size: 72px; }
+  .section-slide p { color: #cfd5f2; font-size: 26px; margin-top: 18px; max-width: 900px; }
+  .section-slide .foot { color: #7d88c4; }
+
+  .bigquote {
+    font-size: 44px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em;
+    border-left: 3px solid var(--accent); padding-left: 34px;
+  }
+  .attrib { margin-top: 22px; font-size: 20px; color: var(--ink-soft); padding-left: 40px; }
+
+  .pg {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 22px 28px;
+  }
+  .pg p { font-size: 24px; font-style: italic; line-height: 1.45; }
+  .pg .src { font-size: 16px; font-style: normal; color: var(--ink-soft); margin-top: 10px; }
+
+  .callout {
+    background: var(--accent-soft); border: 1px solid #f3cea4;
+    border-radius: 10px; padding: 18px 24px; font-size: 22px; font-weight: 600;
+  }
+  .callout.blue { background: var(--indigo-soft); border-color: #c3cbec; }
+  .callout.green { background: var(--green-soft); border-color: #bcdfcc; }
+
+  .checklist { list-style: none; }
+  .checklist li { padding-left: 38px; position: relative; margin-bottom: 13px; }
+  .checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; font-size: 24px; top: -2px; }
+  .crosslist li::before { content: "✕"; color: #b3372c; }
+
+  .numlist { counter-reset: n; list-style: none; }
+  .numlist li { counter-increment: n; margin-bottom: 16px; padding-left: 58px; position: relative; }
+  .numlist li::before {
+    content: counter(n); position: absolute; left: 0; top: -1px;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--indigo); color: #fff; font-weight: 800; font-size: 19px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .statrow { display: flex; gap: 30px; }
+  .stat { flex: 1; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px 14px; }
+  .stat .n { font-size: 52px; font-weight: 800; color: var(--indigo); letter-spacing: -0.02em; }
+  .stat .n.orange { color: var(--accent); }
+  .stat .l { font-size: 17px; color: var(--ink-soft); margin-top: 6px; line-height: 1.3; }
+
+  .timeline { list-style: none; }
+  .timeline li { display: flex; gap: 22px; margin-bottom: 14px; align-items: baseline; }
+  .timeline .yr { flex: none; width: 92px; font-weight: 800; font-size: 20px; color: var(--accent); text-align: right; }
+  .timeline p { font-size: 20px; line-height: 1.4; }
+
+  .titlebar { height: 8px; width: 120px; background: var(--accent); border-radius: 4px; margin: 26px 0; }
+
+  .erd text { font-family: inherit; }
+
+  @media print {
+    body { background: #fff; overflow: visible; }
+    #viewport { position: static; display: block; }
+    #stage { width: 1280px; height: auto; transform: none !important; }
+    .slide { display: flex !important; position: relative; height: 720px; margin: 0 auto; page-break-after: always; border-radius: 0; }
+    .photo-slide { display: block !important; }
+    #pagenum, #progress, #help { display: none !important; }
+  }
+  @page { size: 1280px 720px; margin: 0; }
+
+  #help { position: fixed; left: 16px; bottom: 12px; font-size: 12px; color: #5a5f6e; user-select: none; }
+
+  #ratio-ctl {
+    position: fixed; right: 16px; bottom: 34px; z-index: 10;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #8a8f9e; user-select: none;
+    opacity: .35; transition: opacity .2s;
+  }
+  #ratio-ctl:hover { opacity: 1; }
+  #ratio-ctl input { width: 130px; accent-color: var(--accent); }
+  @media print { #ratio-ctl { display: none !important; } }
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage">
+
+<!-- 1 · TITLE -->
+<section class="slide">
+  <div class="content">
+    <div class="kicker">PRARAMBH · Deep Dive Workshop · SRM University AP · Day 2</div>
+    <h1>Problem <span class="accent">→</span> Solution</h1>
+    <div class="titlebar"></div>
+    <p style="font-size:28px;" class="muted">…and the joy of building things people want, in 2026.</p>
+    <p style="margin-top:44px; font-size:22px;"><b>Raj Madhuram</b> &nbsp;·&nbsp; <span class="muted">Co-Founder &amp; CTO, C1X · 30+ years of building software · ex-Yahoo!</span></p>
+    <p class="muted small" style="margin-top:8px;">Saturday, 29 August 2026</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- 2 · MY FIRST COMPUTER -->
+<section class="slide photo-slide">
+  <img src="assets/colour-genie.jpg" alt="EACA EG2000 Colour Genie home computer with cassette storage, joysticks and a TV as monitor">
+  <span class="credit">Photo: Frank Seger · Wikimedia Commons · CC BY-SA 3.0</span>
+  <div class="caption">
+    <h2>My first computer: Colour Genie</h2>
+    <p>Z80 8-bit microprocessor · <b>32 KB RAM</b> · 16 KB ROM · cassette tape for storage · TV for monitor</p>
+  </div>
+</section>
+
+<!-- 3 · WHAT THAT MACHINE TAUGHT ME -->
+<section class="slide">
+  <h2>What that little machine taught me</h2>
+  <div class="content">
+    <div class="cols">
+      <div class="col card" style="padding:28px 26px;">
+        <span class="tag orange">The loop is the joy</span>
+        <p style="margin-top:12px;">Type → run → it breaks → fix → run again. That loop is the addiction. Startups run the same loop: build, measure, learn.</p>
+      </div>
+      <div class="col card" style="padding:28px 26px;">
+        <span class="tag orange">Constraints breed creativity</span>
+        <p style="margin-top:12px;">32 KB forces you to decide what matters and drop the rest. Remember that number; it comes back later.</p>
+      </div>
+      <div class="col card" style="padding:28px 26px;">
+        <span class="tag orange">The first user</span>
+        <p style="margin-top:12px;">Building for yourself is fun. Watching someone else use what you built is better. That second joy is the whole startup game.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Joy of Building</span></div>
+</section>
+
+<!-- 5b · WHO THIS TALK IS FOR -->
+<section class="slide">
+  <h2>Software Requirements <span class="thin">· across all 31 teams</span></h2>
+  <div class="content">
+    <div class="statrow" style="margin-bottom:22px;">
+      <div class="stat" style="padding:16px 14px;"><div class="n orange" style="font-size:40px;">84%</div><div class="l">need software of some sort (26 of 31)</div></div>
+      <div class="stat" style="padding:16px 14px;"><div class="n" style="font-size:40px;">81%</div><div class="l">are pure software: platforms, apps, AI (25)</div></div>
+      <div class="stat" style="padding:16px 14px;"><div class="n" style="font-size:40px;">16%</div><div class="l">no software required (5)</div></div>
+    </div>
+    <div class="card" style="padding:14px 20px; margin-bottom:12px;">
+      <span class="tag orange">Pure software · 25</span>
+      <p class="small" style="margin-top:8px; line-height:1.55;">SNFS <span class="muted">(care)</span> · Green Genesis <span class="muted">(agri)</span> · Stellaris <span class="muted">(fintech)</span> · HappyHome <span class="muted">(services)</span> · NeuroNest <span class="muted">(health)</span> · DBD <span class="muted">(freelancing)</span> · Aven <span class="muted">(fintech)</span> · ELYON <span class="muted">(security)</span> · Chain of Trust <span class="muted">(govtech)</span> · ConfirmLink <span class="muted">(transport)</span> · Crop Pilots <span class="muted">(agri)</span> · BioByte <span class="muted">(agri)</span> · Cash <span class="muted">(auto)</span> · DocSathi <span class="muted">(govtech)</span> · Desi9 <span class="muted">(fashion)</span> · EventEz <span class="muted">(events)</span> · Astra <span class="muted">(agri)</span> · Med Rakshaks <span class="muted">(pharma)</span> · OMNI <span class="muted">(productivity)</span> · SRMPay <span class="muted">(fintech)</span> · Pepper AI <span class="muted">(knowledge)</span> · Dream It <span class="muted">(agri)</span> · Pet Orbit <span class="muted">(pet care)</span> · Genesis <span class="muted">(travel)</span> · Haven <span class="muted">(kid-safe tech)</span></p>
+    </div>
+    <div class="cols" style="gap:12px; margin-bottom:12px;">
+      <div class="col card" style="padding:14px 20px;">
+        <span class="tag blue">Hardware + software · 1</span>
+        <p class="small" style="margin-top:8px;">Ayush Plus <span class="muted">(heart monitor + AI)</span></p>
+      </div>
+      <div class="col card" style="padding:14px 20px;">
+        <span class="tag green">No software · 5</span>
+        <p class="small" style="margin-top:8px;">BHHARRAT <span class="muted">(hydrogen)</span> · Trinetra <span class="muted">(saffron)</span> · GREEN CYCLE <span class="muted">(tyres)</span> · AquaRescue <span class="muted">(water)</span> · ABHYUDAYA <span class="muted">(textiles)</span></p>
+      </div>
+    </div>
+    <p class="muted small">Hardware teams: booking, tracking, telemetry, dashboards — the software shows up around every physical product eventually.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- 3a · AGENDA -->
+<section class="slide">
+  <h2>Agenda</h2>
+  <div class="content">
+    <ol class="numlist">
+      <li><b>The Silicon Valley Phenomenon</b></li>
+      <li><b>The Joy of Building</b></li>
+      <li><b>Now is the best time to build!</b></li>
+      <li><b>Two stories: a Sprint and a Marathon</b></li>
+    </ol>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- 3b · SECTION: SILICON VALLEY PHENOMENON -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Problem → Solution</div>
+    <h1>1 · The Silicon Valley<br>Phenomenon</h1>
+    <p>Building great things · Innovation culture · Global impact</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- 3c · SILICON VALLEY MAP (LIVE) -->
+<section class="slide iframe-slide">
+  <div class="bar"><span><b>The Silicon Valley Map</b> — the garages, dorm rooms, and offices where it happened</span><span>siliconvalleymap.org</span></div>
+  <div class="frame-wrap" style="background-image:url('assets/silicon-valley-map.jpg');">
+    <iframe src="https://www.siliconvalleymap.org/" title="Silicon Valley Map" loading="lazy" onload="this.classList.add('on')"></iframe>
+  </div>
+</section>
+
+<!-- 3d · COMPARING THE SCALES -->
+<section class="slide">
+  <h2>Comparing the scales: <span class="thin">a global perspective</span></h2>
+  <div class="content">
+    <svg viewBox="0 0 1140 470" style="width:100%; height:auto; max-height:470px;" role="img" aria-label="Top 10 Bay Area tech companies combined market cap, 19.67 trillion dollars, shown as a circle 4.7 times the area of India's nominal GDP, 4.15 trillion dollars">
+      <!-- circles drawn to scale by area -->
+      <circle cx="330" cy="240" r="200" fill="#4353b8"/>
+      <circle cx="840" cy="348" r="92" fill="#1e7d4f"/>
+      <!-- big circle labels -->
+      <text x="330" y="134" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="700" letter-spacing="2">TOP 10 BAY AREA</text>
+      <text x="330" y="158" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="700" letter-spacing="2">TECH COMPANIES</text>
+      <text x="330" y="238" text-anchor="middle" fill="#ffffff" font-size="72" font-weight="800">$19.67T</text>
+      <text x="330" y="272" text-anchor="middle" fill="#cdd4f5" font-size="17">combined market value</text>
+      <text x="330" y="318" text-anchor="middle" fill="#cdd4f5" font-size="14.5">NVIDIA · Apple · Alphabet · Meta · Broadcom</text>
+      <text x="330" y="340" text-anchor="middle" fill="#cdd4f5" font-size="14.5">AMD · Netflix · Cisco · Salesforce · Applied Materials</text>
+      <!-- small circle labels -->
+      <text x="840" y="322" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="700" letter-spacing="1.5">INDIA'S GDP</text>
+      <text x="840" y="366" text-anchor="middle" fill="#ffffff" font-size="42" font-weight="800">$4.15T</text>
+      <text x="840" y="392" text-anchor="middle" fill="#d3ecdd" font-size="14">nominal, 2026</text>
+      <!-- ratio annotation -->
+      <text x="620" y="180" text-anchor="middle" fill="#4a5268" font-size="24" font-weight="800">≈ 4.7×</text>
+      <line x1="620" y1="196" x2="620" y2="248" stroke="#9aa0ae" stroke-width="1.5"/>
+    </svg>
+    <p class="muted small" style="margin-top:10px;">Circles drawn to scale. Market value and yearly output are different measures; the point is what a building culture compounds into: ten companies within 50 km of each other outweigh the output of 1.4 billion people.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- 3e · WHAT IS YOUR GARAGE -->
+<section class="slide photo-slide">
+  <img src="assets/hp-garage.jpg" alt="The HP Garage at 367 Addison Avenue, Palo Alto, with its green wooden doors">
+  <div class="caption">
+    <h2>What is your garage?</h2>
+    <p>367 Addison Avenue, Palo Alto. In 1939, Bill Hewlett and Dave Packard started HP here with <b>$538</b>. The official birthplace of Silicon Valley.</p>
+  </div>
+</section>
+
+<!-- 3f · THE GARAGE MINDSET -->
+<section class="slide">
+  <h2>The garage mindset</h2>
+  <div class="content">
+    <p style="margin-bottom:24px;">The HP Garage symbolizes humble beginnings, innovation, and entrepreneurial spirit. Four things it stands for:</p>
+    <div class="cols" style="gap:20px;">
+      <div class="col card" style="padding:24px 22px;">
+        <span class="tag orange">Passion for a bigger vision</span>
+        <p style="margin-top:12px; font-size:19px;">Find a problem that matters and commit to solving it, regardless of your current scale.</p>
+      </div>
+      <div class="col card" style="padding:24px 22px;">
+        <span class="tag orange">Start small, think big</span>
+        <p style="margin-top:12px; font-size:19px;">Most groundbreaking ventures began with limited resources in unconventional spaces.</p>
+      </div>
+      <div class="col card" style="padding:24px 22px;">
+        <span class="tag orange">Resilience and grit</span>
+        <p style="margin-top:12px; font-size:19px;">The journey of building is full of challenges and setbacks. Keep going anyway.</p>
+      </div>
+      <div class="col card" style="padding:24px 22px;">
+        <span class="tag orange">Innovation</span>
+        <p style="margin-top:12px; font-size:19px;">A space to experiment, dare to challenge conventions, and create.</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:26px;">None of these require money. All of them fit in a hostel room.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Silicon Valley Phenomenon</span></div>
+</section>
+
+<!-- 3f2 · PAUL GRAHAM / Y COMBINATOR -->
+<section class="slide">
+  <h2>Paul Graham <span class="thin">&amp; Y Combinator</span></h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:24px;">
+      <div class="col card">
+        <span class="tag blue">Who</span>
+        <p style="margin-top:10px;">Programmer, essayist, co-founder of <b>Y Combinator</b> (2005): the startup school that funded Airbnb, Stripe, Dropbox, Reddit, and Coinbase at the "two people and an idea" stage.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">Why he matters to you</span>
+        <p style="margin-top:10px;">Nobody has written more clearly about how startups actually begin. His essays are short, free, and at <b>paulgraham.com</b>. YC's motto is four words: <b>"Make something people want."</b></p>
+      </div>
+    </div>
+    <div class="card" style="padding:20px 26px;">
+      <span class="tag orange">Start with these</span>
+      <p style="margin-top:12px; font-size:20px; line-height:1.7;">
+        <b><i>How to Get Startup Ideas</i></b> — why the best ideas are problems you have yourself<br>
+        <b><i>Do Things That Don't Scale</i></b> — recruit your first users by hand<br>
+        <b><i>Schlep Blindness</i></b> — the best ideas hide behind boring, painful work<br>
+        <b><i>How to Be Silicon Valley</i></b> — what it takes for a place to become a startup hub
+      </p>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Silicon Valley Phenomenon</span></div>
+</section>
+
+<!-- 3g · SECTION: THE JOY OF BUILDING -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Problem → Solution</div>
+    <h1>2 · The Joy of Building</h1>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- 3h · PG QUOTE: STARTUP IDEAS -->
+<section class="slide">
+  <div class="content">
+    <div class="bigquote">"The way to get startup ideas is not to try to think of startup ideas. It's to look for problems — preferably <span class="accent">problems you have yourself</span>."</div>
+    <p class="attrib">— Paul Graham, <i>How to Get Startup Ideas</i> (2012)</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Joy of Building</span></div>
+</section>
+
+<!-- 4 · BUILDING AS A HABIT -->
+<section class="slide">
+  <h2>Make building a habit, <span class="thin">not an event</span></h2>
+  <div class="content">
+    <div style="display:flex; gap:30px; align-items:stretch;">
+      <figure style="flex:none; width:270px; display:flex; flex-direction:column;">
+        <img src="assets/quizstar.jpg" alt="The original QuizStar-dps Release 1.10 boxed software by Pragati Systems Group" style="width:100%; flex:1; object-fit:cover; border-radius:12px; border:1px solid var(--line);">
+        <figcaption class="muted" style="font-size:14px; margin-top:8px; text-align:center;">The actual box. QuizStar-dps, Release 1.10.</figcaption>
+      </figure>
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:22px;">
+        <div class="card">
+          <span class="tag orange">My QuizStar story</span>
+          <p style="margin-top:10px;">Started QuizStar, a quiz and self-development system, in Class XII. Launched it in my first year at GCT.</p>
+        </div>
+        <div class="card">
+          <span class="tag orange">Still my habit, 30 years on</span>
+          <p style="margin-top:10px;">Hobby projects like <b><a href="https://pcaisso.vercel.app/" target="_blank" rel="noopener" style="color:var(--indigo);">Pcaisso</a></b>, <b><a href="https://fantasia-v4.vercel.app" target="_blank" rel="noopener" style="color:var(--indigo);">Fantasia</a></b>, and <b><a href="https://t20-stats.vercel.app/" target="_blank" rel="noopener" style="color:var(--indigo);">T20 Visualizer</a></b> live on my weekends today. The habit of building small things is what let me build the big things at work.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Joy of Building</span></div>
+</section>
+
+<!-- 4b · PRACTICAL TIPS -->
+<section class="slide">
+  <h2>Some practical tips</h2>
+  <div class="content">
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="card" style="display:flex; align-items:center; gap:24px; padding:14px 26px;">
+        <div style="flex:none; width:56px; height:56px; border-radius:50%; background:#fbe7e4; display:flex; align-items:center; justify-content:center;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#b3372c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="#b3372c"/></svg>
+        </div>
+        <div>
+          <h3 style="margin-bottom:5px;">Attack the riskiest item first</h3>
+          <p class="muted" style="font-size:19px;">Find the assumption or component that could kill the project, and test it before polishing anything else.</p>
+        </div>
+      </div>
+      <div class="card" style="display:flex; align-items:center; gap:24px; padding:14px 26px;">
+        <div style="flex:none; width:56px; height:56px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e8720c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>
+        </div>
+        <div>
+          <h3 style="margin-bottom:5px;">Make it world class</h3>
+          <p class="muted" style="font-size:19px;">Whatever you build, build it properly. Small scope, high quality, and a great UX. A polished small thing beats a sloppy big one.</p>
+        </div>
+      </div>
+      <div class="card" style="display:flex; align-items:center; gap:24px; padding:14px 26px;">
+        <div style="flex:none; width:56px; height:56px; border-radius:50%; background:var(--indigo-soft); display:flex; align-items:center; justify-content:center;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2b3a8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="6" rx="1.5"/><rect x="14" y="3" width="7" height="6" rx="1.5"/><rect x="8.5" y="15" width="7" height="6" rx="1.5"/><path d="M6.5 9v3h11V9M12 12v3"/></svg>
+        </div>
+        <div>
+          <h3 style="margin-bottom:5px;">Focus on the data model</h3>
+          <p class="muted" style="font-size:19px;">It's the heart of your system. Get the entities and relationships right first; the code follows from it.</p>
+        </div>
+      </div>
+      <div class="card" style="display:flex; align-items:center; gap:24px; padding:14px 26px;">
+        <div style="flex:none; width:56px; height:56px; border-radius:50%; background:var(--green-soft); display:flex; align-items:center; justify-content:center;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1e7d4f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M9 12h6M9 16h6M9 8h1.5"/></svg>
+        </div>
+        <div>
+          <h3 style="margin-bottom:5px;">Documentation matters</h3>
+          <p class="muted" style="font-size:19px;">Especially when building as a team. Write down what it is, how to run it, and why you decided what you decided.</p>
+        </div>
+      </div>
+      <div class="card" style="display:flex; align-items:center; gap:24px; padding:14px 26px;">
+        <div style="flex:none; width:56px; height:56px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#e8720c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="M6.5 9.5 9.5 12l-3 2.5M12 15h5"/></svg>
+        </div>
+        <div>
+          <h3 style="margin-bottom:5px;">Get a Claude Code subscription!</h3>
+          <p class="muted" style="font-size:19px;">The best money a student builder can spend right now.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Joy of Building</span></div>
+</section>
+
+<!-- 13 · SECTION: LEVERAGING AI -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Problem → Solution</div>
+    <h1>3 · Now is the best<br>time to build!</h1>
+    <p>Open source, cheap hardware, and AI have collapsed the cost of trying an idea.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- 8 · GREAT TIME TO BE BUILDING -->
+<section class="slide">
+  <h2>Three reasons it's your moment</h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:26px;">
+      <div class="col card">
+        <span class="tag green">Open source software</span>
+        <p style="margin-top:12px;">Libraries, frameworks, and tools for almost everything. Free. The hard parts are already built; you stand on them.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">Open source hardware</span>
+        <p style="margin-top:12px;">Arduino, ESP32, Raspberry Pi. A few hundred rupees buys a computer that senses and controls the physical world. Add 3D printing and drones, and you can prototype almost anything.</p>
+      </div>
+      <div class="col card">
+        <span class="tag orange">AI</span>
+        <p style="margin-top:12px;">Claude Code, ChatGPT, Gemini. Code that took months now takes days. The cost of trying an idea has never been lower.</p>
+      </div>
+    </div>
+    <div class="callout">The flip side: if building is cheap for you, it's cheap for everyone. What's scarce now is knowing <b>what</b> to build and getting the foundations right. That's the rest of this talk.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>1 · Why now</span></div>
+</section>
+
+<!-- 7 · COST COLLAPSE + 3D MODELER -->
+<section class="slide">
+  <h2>The cost of building has collapsed</h2>
+  <div class="content">
+    <div class="statrow" style="margin-bottom:24px;">
+      <div class="stat" style="padding:16px 14px;"><div class="n" style="font-size:40px;">32 KB</div><div class="l">my Colour Genie, 1980s</div></div>
+      <div class="stat" style="padding:16px 14px;"><div class="n" style="font-size:40px;">~250,000&times;</div><div class="l">more RAM in the phone in your pocket</div></div>
+      <div class="stat" style="padding:16px 14px;"><div class="n orange" style="font-size:40px;">1 weekend</div><div class="l">what "months of work" now takes</div></div>
+    </div>
+    <div class="cols" style="margin-bottom:20px;">
+      <div class="col card">
+        <span class="tag blue">Then: GCT Coimbatore</span>
+        <p style="margin-top:10px; font-size:20px;">I built a <b>3D modeling platform from scratch</b>, using principles from our Engineering Drawing class. Months of work. It won prizes at national-level contests.</p>
+      </div>
+      <div class="col card">
+        <span class="tag orange">Now: one recent evening</span>
+        <p style="margin-top:10px; font-size:20px;">I re-created it with <b>Claude Code in a few hours</b>. Same math, same principles. The AI typed; I steered with what I knew.</p>
+      </div>
+    </div>
+    <div class="callout">The AI could not have known <b>what</b> to build, or whether the math was right. AI multiplies what you know; it doesn't replace knowing it.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Now is the best time to build</span></div>
+</section>
+
+<!-- 7b · LEAKY ABSTRACTIONS & DUNNING-KRUGER -->
+<section class="slide">
+  <h2>Two warnings <span class="thin">before you let AI do the typing</span></h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:22px;">
+      <div class="col card">
+        <span class="tag blue">The Law of Leaky Abstractions</span>
+        <p style="margin-top:10px; font-size:20px;"><i>"All non-trivial abstractions, to some degree, are leaky."</i> — Joel Spolsky, 2002.</p>
+        <p style="margin-top:10px; font-size:20px;">AI is the biggest abstraction ever built over code. It will leak: generated code <b>will</b> break in ways only someone who understands the layer beneath can fix. That someone has to be you.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">The Dunning–Kruger effect</span>
+        <p style="margin-top:10px; font-size:20px;">Knowing a little feels like knowing a lot. AI hands you the first 80% so fast that the peak of early confidence arrives on day one.</p>
+        <svg viewBox="0 0 360 120" style="width:100%; margin-top:10px;">
+          <path d="M14 108 C 44 18, 66 18, 88 52 C 118 96, 150 100, 200 78 C 260 52, 310 34, 348 22" fill="none" stroke="#2b3a8c" stroke-width="2.5"/>
+          <text x="52" y="14" text-anchor="middle" font-size="12" fill="#4a5268">"AI makes this easy!"</text>
+          <text x="160" y="116" text-anchor="middle" font-size="12" fill="#4a5268">the demo breaks</text>
+          <text x="322" y="12" text-anchor="middle" font-size="12" fill="#4a5268">real expertise</text>
+          <line x1="14" y1="110" x2="352" y2="110" stroke="#c9c5ba" stroke-width="1"/>
+          <text x="352" y="100" text-anchor="end" font-size="11" fill="#9aa0ae">competence →</text>
+        </svg>
+      </div>
+    </div>
+    <div class="callout">Vibe coding gets you a demo. Fundamentals get you a product. Use AI to move faster <b>through</b> the layers, not to skip learning them.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Now is the best time to build</span></div>
+</section>
+
+<!-- 17 · SECTION: TWO STORIES -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Problem → Solution</div>
+    <h1>4 · Two Stories</h1>
+    <p>A Sprint and a Marathon. Both are true at the same time.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Joy of Building</span></div>
+</section>
+
+<!-- 18 · STORY: MONEYBALL -->
+<section class="slide">
+  <h2><span class="kicker" style="display:block;">The sprint · I was at Yahoo when this happened</span>Project Moneyball: a real platform in 43 days</h2>
+  <div class="content">
+    <div class="statrow" style="margin-bottom:26px;">
+      <div class="stat"><div class="n">18</div><div class="l">people, pulled into one skunkworks team</div></div>
+      <div class="stat"><div class="n orange">43</div><div class="l">days from kickoff to a live native-ads platform (Gemini)</div></div>
+      <div class="stat"><div class="n">$300M</div><div class="l">revenue in its first year, 2014</div></div>
+    </div>
+    <ul class="checklist">
+      <li><b>Small team, total focus:</b> 18 people who did nothing else for six weeks</li>
+      <li><b>A real deadline:</b> launch was announced before the build finished</li>
+      <li><b>Ruthless scope:</b> v1 did one thing, native ads on Yahoo's own streams. Everything else waited</li>
+    </ul>
+    <p class="muted small" style="margin-top:18px;">"Project Moneyball: An Oral History", Fast Company, 2015. A billion-dollar company at hackathon speed. If Yahoo did it with 18 people, your team of 4 can build a v1.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>4 · Two stories</span></div>
+</section>
+
+<!-- 19 · STORY: HUGGING FACE -->
+<section class="slide">
+  <h2><span class="kicker" style="display:block;">The marathon · announced this week</span>Hugging Face: 2016 → $12.9 billion</h2>
+  <div class="content">
+    <ul class="timeline">
+      <li><span class="yr">2016</span><p>Three "random French dudes with no credentials" build an AI chatbot for teenagers. <b>100,000 daily users.</b></p></li>
+      <li><span class="yr">But</span><p>4 of 5 users never come back. They believe the churn, not the hype.</p></li>
+      <li><span class="yr">2018</span><p>Thomas Wolf ports Google's BERT to PyTorch <b>over a weekend</b>. His tweet breaks the internet.</p></li>
+      <li><span class="yr">The call</span><p>They <b>kill the chatbot with 100K daily users</b> and go all-in on open source.</p></li>
+      <li><span class="yr">2026</span><p>3M models, 13M+ users, "the GitHub of AI". This Thursday: <b>NVIDIA acquires Hugging Face for $12.9B</b>.</p></li>
+    </ul>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>4 · Two stories</span></div>
+</section>
+
+<!-- 20 · HUGGING FACE LESSONS -->
+<section class="slide">
+  <h2>What Hugging Face teaches</h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:22px;">
+      <div class="col card">
+        <span class="tag blue">Be honest about your metrics</span>
+        <p style="margin-top:10px;">100K daily users looked like success. 80% never returning was the truth. They believed the second number.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">Follow the energy</span>
+        <p style="margin-top:10px;">A weekend port got more genuine pull than two years of the main product. When the side project outruns the product, that's data.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">It's a marathon</span>
+        <p style="margin-top:10px;">Ten years, one brutal pivot, credentials optional. A startup doesn't have to be a sprint. You're 20; time is your unfair advantage.</p>
+      </div>
+    </div>
+    <div class="pg">
+      <p>"The best startups almost have to start as side projects."</p>
+      <p class="src">Paul Graham, <i>How to Get Startup Ideas</i>. Thomas Wolf's weekend port is this sentence, worth $12.9 billion.</p>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>4 · Two stories</span></div>
+</section>
+
+<!-- 21 · CLOSE -->
+<section class="slide">
+  <div class="content">
+    <div class="bigquote">"Make something<br>people <span class="accent">want</span>."</div>
+    <p class="attrib">— Paul Graham</p>
+    <div class="titlebar"></div>
+    <p style="font-size:22px; line-height:1.8;">
+      <b>1 · Silicon Valley:</b> great things start small. <span class="accent"><b>What is your garage?</b></span><br>
+      <b>2 · The joy of building:</b> make it a habit. Look for problems you have yourself.<br>
+      <b>3 · Now is the best time:</b> AI multiplies what you know. Build this weekend, not someday.<br>
+      <b>4 · Sprint or marathon:</b> ship fast like Moneyball, stay honest and patient like Hugging Face.
+    </p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- 21b · C1X TEAM -->
+<section class="slide photo-slide">
+  <img src="assets/c1x-team.jpg" alt="The C1X team gathered in front of the office, many in traditional festive dress">
+  <img src="assets/c1x-logo.png" alt="C1X logo" style="position:absolute; top:28px; left:32px; width:130px; height:auto; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,.35); opacity:1;">
+  <div class="caption">
+    <h2>C1X Inc.</h2>
+    <p>We build a lot of cool things! San Francisco Bay Area · Chennai</p>
+  </div>
+</section>
+
+<!-- 22 · THANK YOU -->
+<section class="slide">
+  <div class="content" style="flex-direction:row; display:flex; align-items:center; gap:70px;">
+    <div style="flex:1;">
+      <div class="kicker">PRARAMBH · Deep Dive Workshop</div>
+      <h1>Thank you!</h1>
+      <div class="titlebar"></div>
+      <p style="font-size:24px;">Questions now, or grab me during the breaks.</p>
+      <p class="muted" style="margin-top:26px; font-size:20px;"><b>Raj Madhuram</b><br>Co-Founder &amp; CTO, C1X<br>linkedin.com/in/rmadhuram</p>
+    </div>
+    <figure style="flex:none; text-align:center;">
+      <img src="assets/linkedin-qr.png" alt="QR code for Raj Madhuram's LinkedIn profile" style="width:320px; height:320px; border:1px solid var(--line); border-radius:16px; background:#fff; padding:6px;">
+      <figcaption class="muted" style="font-size:17px; margin-top:12px;">Scan to connect on LinkedIn</figcaption>
+    </figure>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+</div>
+</div>
+
+<div id="pagenum"></div>
+<div id="progress"></div>
+<div id="help">← → navigate · Home/End · print = PDF export</div>
+<div id="ratio-ctl" title="Match the projector's aspect ratio">
+  <span>aspect</span>
+  <input type="range" id="ratio-slider" min="125" max="220" step="1" value="178">
+  <span id="ratio-label">1.78:1</span>
+</div>
+
+<script>
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const pagenum = document.getElementById('pagenum');
+  const progress = document.getElementById('progress');
+  const stage = document.getElementById('stage');
+  const slider = document.getElementById('ratio-slider');
+  const ratioLabel = document.getElementById('ratio-label');
+  let i = 0;
+  let stageW = 1280;
+
+  function clamp(n) { return Math.max(0, Math.min(slides.length - 1, n)); }
+  function show(n) {
+    i = clamp(n);
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    pagenum.textContent = (i + 1) + ' / ' + slides.length;
+    progress.style.transform = 'scaleX(' + ((i + 1) / slides.length) + ')';
+    location.hash = '#' + (i + 1);
+  }
+  function fit() {
+    const s = Math.min(innerWidth / (stageW + 20), innerHeight / 740);
+    stage.style.transform = 'scale(' + s + ')';
+  }
+  function setRatio(v) {
+    stageW = Math.round(720 * v / 100);
+    stage.style.width = stageW + 'px';
+    ratioLabel.textContent = (v / 100).toFixed(2) + ':1';
+    fit();
+  }
+  slider.addEventListener('input', () => {
+    setRatio(+slider.value);
+    try { localStorage.setItem('stageRatio', slider.value); } catch (e) {}
+  });
+  try {
+    const saved = parseInt(localStorage.getItem('stageRatio'), 10);
+    if (saved >= 125 && saved <= 220) { slider.value = saved; setRatio(saved); }
+  } catch (e) {}
+  addEventListener('resize', fit);
+  addEventListener('keydown', (e) => {
+    if (e.target && e.target.tagName === 'INPUT') return;
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+  });
+  addEventListener('click', (e) => {
+    if (e.target.closest('a') || e.target.closest('#ratio-ctl')) return;
+    show(e.clientX > innerWidth / 2 ? i + 1 : i - 1);
+  });
+  const fromHash = parseInt(location.hash.slice(1), 10);
+  fit();
+  show(isNaN(fromHash) ? 0 : fromHash - 1);
+})();
+</script>
+</body>
+</html>

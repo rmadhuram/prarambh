@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problem → Solution Worksheet — PRARAMBH 2026</title>
+<style>
+  :root {
+    --ink: #1c2333;
+    --ink-soft: #4a5268;
+    --accent: #e8720c;
+    --accent-soft: #fdeedd;
+    --indigo: #2b3a8c;
+    --indigo-soft: #e6e9f7;
+    --line: #c9c5ba;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background: #ececec;
+  }
+  .page {
+    width: 210mm; min-height: 296mm;
+    margin: 0 auto; background: #fff;
+    padding: 14mm 16mm 12mm;
+    display: flex; flex-direction: column;
+  }
+  @media screen { .page { margin: 24px auto; box-shadow: 0 2px 14px rgba(0,0,0,.18); } }
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; box-shadow: none; }
+  }
+  @page { size: A4 portrait; margin: 0; }
+
+  header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid var(--ink); padding-bottom: 10px; }
+  .kicker { font-size: 10.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-size: 25px; font-weight: 800; letter-spacing: -0.01em; margin-top: 3px; }
+  .meta { text-align: right; font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .meta .fill { display: inline-block; min-width: 46mm; border-bottom: 1px solid var(--ink-soft); }
+
+  section { margin-top: 15px; }
+  .sechead { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .num {
+    width: 24px; height: 24px; border-radius: 50%; flex: none; align-self: center;
+    background: var(--indigo); color: #fff; font-weight: 800; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  h2 { font-size: 15.5px; font-weight: 800; }
+  .time { font-size: 11px; color: var(--ink-soft); font-weight: 600; margin-left: auto; }
+  .hint { font-size: 11.5px; color: var(--ink-soft); line-height: 1.45; margin-bottom: 7px; }
+  .hint b { color: var(--ink); }
+
+  .lines { border: 1px solid var(--line); border-radius: 6px; padding: 0 10px; }
+  .lines .ln { height: 8.2mm; border-bottom: 1px dotted var(--line); }
+  .lines .ln:last-child { border-bottom: none; }
+
+  .tmpl {
+    border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
+    font-size: 13.5px; line-height: 2.35;
+  }
+  .blank { display: inline-block; border-bottom: 1px solid var(--ink-soft); min-width: 34mm; }
+  .blank.w { min-width: 58mm; }
+  .lbl { font-size: 10px; color: var(--ink-soft); vertical-align: super; }
+
+  .grid { display: flex; gap: 10px; }
+  .grid .cell { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+  .cell .clbl { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+  .cell .space { height: 9mm; }
+  .cell .space.tall { height: 17mm; }
+
+  .passmark { background: var(--accent-soft); border: 1px solid #eccb9e; border-radius: 6px; padding: 9px 12px; margin-top: 8px; font-size: 13.5px; }
+  .checkrow { margin-top: 7px; font-size: 12px; color: var(--ink-soft); }
+  .box { display: inline-block; width: 11px; height: 11px; border: 1.5px solid var(--ink-soft); border-radius: 2px; margin: 0 4px -1px 12px; }
+
+  .peer { background: var(--indigo-soft); border: 1px solid #c3cbec; border-radius: 6px; padding: 10px 12px; }
+  .peer h2 { color: var(--indigo); font-size: 14px; margin-bottom: 4px; }
+  .peer p { font-size: 11.5px; color: var(--ink-soft); line-height: 1.45; }
+  .peer .space { height: 12mm; border-bottom: 1px dotted #9aa5cf; margin-top: 4px; }
+
+  footer { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 10.5px; color: var(--ink-soft); }
+  footer b { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div>
+      <div class="kicker">PRARAMBH Deep Dive Workshop · Day 1 · Problem → Solution</div>
+      <h1>From Problem to Testable Solution</h1>
+    </div>
+    <div class="meta">
+      Team <span class="fill">&nbsp;</span><br>
+      Date <span class="fill">&nbsp;</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="sechead"><div class="num">1</div><h2>The smallest slice</h2><div class="time">2 min</div></div>
+    <p class="hint">The smallest version of your solution that still <b>completely solves the core problem for one specific user</b>. Name the user precisely: not "farmers", but "chilli farmers in Guntur with under 5 acres". Pitch the vision; build this.</p>
+    <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+  </section>
+
+  <section>
+    <div class="sechead"><div class="num">2</div><h2>Our riskiest assumption</h2><div class="time">2 min</div></div>
+    <p class="hint">Usually about <b>behavior or money</b>, rarely about technology: will they switch, trust, pay, come back?</p>
+    <div class="tmpl">We believe <span class="blank w">&nbsp;</span><span class="lbl"></span> .<br>
+    If we're wrong about this, nothing else matters.</div>
+  </section>
+
+  <section>
+    <div class="sechead"><div class="num">3</div><h2>Our two-week MVP experiment</h2><div class="time">5 min</div></div>
+    <p class="hint">An experiment, not a smaller product. Under ₹5,000, real users, often <b>no code at all</b>: landing page, concierge, Wizard of Oz. Do things that don't scale.</p>
+    <div class="grid">
+      <div class="cell" style="flex:2.2;"><div class="clbl">The test: what we will actually do</div><div class="space tall"></div></div>
+      <div class="cell"><div class="clbl">Real users: who &amp; how many</div><div class="space"></div><div class="clbl">Budget (≤ ₹5,000)</div><div class="space" style="height:5mm;"></div></div>
+    </div>
+    <div class="passmark"><b>Pass mark, committed in advance:</b> we succeed if <span class="blank w">&nbsp;</span> by <span class="blank" style="min-width:24mm;">&nbsp;</span><span class="lbl">(date)</span></div>
+    <div class="checkrow">If we miss the pass mark, we will: <span class="box"></span> pivot the solution &nbsp;<span class="box"></span> re-scope the customer &nbsp;<span class="box"></span> kill the idea and choose another well</div>
+  </section>
+
+  <section>
+    <div class="sechead"><div class="num">4</div><h2>Our value proposition, in one breath</h2><div class="time">3 min</div></div>
+    <p class="hint">"Today's alternative" is rarely a startup. It's WhatsApp, a notebook, a middleman, or doing nothing.</p>
+    <div class="tmpl">
+      For <span class="blank">&nbsp;</span><span class="lbl">(customer)</span> who <span class="blank">&nbsp;</span><span class="lbl">(top pain)</span> ,
+      <span class="blank" style="min-width:28mm;">&nbsp;</span><span class="lbl">(product)</span> is a <span class="blank" style="min-width:28mm;">&nbsp;</span><span class="lbl">(category)</span>
+      that <span class="blank w">&nbsp;</span><span class="lbl">(key benefit)</span> .<br>
+      Unlike <span class="blank">&nbsp;</span><span class="lbl">(today's alternative)</span> , we <span class="blank w">&nbsp;</span><span class="lbl">(sharpest difference)</span> .
+    </div>
+  </section>
+
+  <section>
+    <div class="peer">
+      <h2>Peer review: swap sheets with the nearest team (2 min)</h2>
+      <p>Circle anything vague. Star anything sharp. Then write one hard question this team should be ready to answer:</p>
+      <div class="space"></div>
+      <p style="margin-top:4px;">Reviewed by team: <span class="blank" style="min-width:40mm; border-color:#9aa5cf;">&nbsp;</span></p>
+    </div>
+  </section>
+
+  <footer>
+    <span><b>Bring this sheet to your Day 2 one-to-one.</b> It is the first thing your mentor will ask about.</span>
+    <span>Homework at paulgraham.com: <i>How to Get Startup Ideas</i> · <i>Do Things That Don't Scale</i> · <i>Schlep Blindness</i></span>
+  </footer>
+
+</div>
+</body>
+</html>

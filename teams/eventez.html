@@ -1,0 +1,274 @@
+<title>EventEz Deep Dive</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --paper: #fbfaf7;
+    --ink: #1c2333;
+    --ink-soft: #4a5268;
+    --accent: #e8720c;
+    --accent-soft: #fdeedd;
+    --indigo: #2b3a8c;
+    --indigo-chip: #e6e9f7;
+    --indigo-chip-ink: #2b3a8c;
+    --card: #ffffff;
+    --line: #e2ddd2;
+    --line-strong: #c9c5ba;
+    --warn-bg: #fbe9e4;
+    --warn-ink: #a13c1c;
+    --note-bg: #f1efe8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161f;
+      --ink: #eceef5;
+      --ink-soft: #a0a8bf;
+      --accent: #f68a2e;
+      --accent-soft: #33261a;
+      --indigo: #93a1e8;
+      --indigo-chip: #232a45;
+      --indigo-chip-ink: #aab5ef;
+      --card: #1c1f2c;
+      --line: #2b2f40;
+      --line-strong: #3a3f55;
+      --warn-bg: #3a221c;
+      --warn-ink: #f0a58a;
+      --note-bg: #20232f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161f;
+    --ink: #eceef5;
+    --ink-soft: #a0a8bf;
+    --accent: #f68a2e;
+    --accent-soft: #33261a;
+    --indigo: #93a1e8;
+    --indigo-chip: #232a45;
+    --indigo-chip-ink: #aab5ef;
+    --card: #1c1f2c;
+    --line: #2b2f40;
+    --line-strong: #3a3f55;
+    --warn-bg: #3a221c;
+    --warn-ink: #f0a58a;
+    --note-bg: #20232f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    padding: 0 24px 72px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+
+  a { color: var(--indigo); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .backlink { font-size: 13px; font-weight: 600; text-decoration: none; }
+
+  header { padding: 44px 0 24px; border-bottom: 3px solid var(--ink); }
+  .kicker {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 18px;
+  }
+  h1 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: clamp(36px, 6vw, 54px);
+    font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.02; margin-top: 6px;
+  }
+  .sub { margin-top: 8px; font-size: 16px; color: var(--ink-soft); }
+  .metarow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .chip {
+    font-size: 12px; font-weight: 700; letter-spacing: .03em;
+    padding: 3px 10px; border-radius: 999px;
+    background: var(--indigo-chip); color: var(--indigo-chip-ink);
+  }
+  .chip.note { background: var(--note-bg); color: var(--ink-soft); }
+
+  section { margin-top: 38px; }
+  h2 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 22px; font-weight: 800; letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  h2 .no { color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  section > p { margin-top: 10px; max-width: 68ch; }
+  .why { margin-top: 10px; font-size: 14px; color: var(--ink-soft); max-width: 68ch; }
+  .why b { color: var(--ink); font-weight: 600; }
+
+  .submitted { margin-top: 14px; display: grid; gap: 10px; }
+  .submitted .row {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; font-size: 14px;
+  }
+  .submitted .lbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 3px;
+  }
+
+  ul.q { margin-top: 12px; list-style: none; display: grid; gap: 8px; }
+  ul.q li {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 11px 15px; font-size: 14.5px;
+  }
+  ul.q li b { font-weight: 600; }
+
+  .killshot {
+    margin-top: 44px;
+    background: var(--accent-soft); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 22px 26px;
+  }
+  .killshot .lbl {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .killshot p {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 21px; font-weight: 700; letter-spacing: -0.01em;
+    margin-top: 8px; line-height: 1.3; text-wrap: balance;
+  }
+  .killshot .after { font-size: 14px; font-weight: 400; color: var(--ink-soft); margin-top: 10px; }
+
+  .facts {
+    margin-top: 14px;
+    background: var(--note-bg); border: 1px solid var(--line-strong); border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .facts ul { margin: 6px 0 0 18px; font-size: 14px; display: grid; gap: 6px; }
+  .facts .cv { font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+
+  footer {
+    margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line-strong);
+    font-size: 12.5px; color: var(--ink-soft);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+
+<div class="wrap">
+
+<header>
+  <a class="backlink" href="https://claude.ai/code/artifact/8d37fe34-032c-4584-ba63-de6354566045">← The PRARAMBH Cohort</a>
+  <div class="kicker">Team Deep Dive · Services</div>
+  <h1>EventEz</h1>
+  <p class="sub">An all-in-one event planning platform: inspiration, vendors, budgeting, and planning in one place, with personalized recommendations.</p>
+  <div class="metarow">
+    <span class="chip">Mentor: Mr. Vijay</span>
+    <span class="chip note">Pure software</span>
+  </div>
+</header>
+
+<section>
+  <h2>What they submitted</h2>
+  <div class="submitted">
+    <div class="row"><div class="lbl">Problem</div>Planning an event is stressful and slow: people search across multiple platforms for themes, decorations, venues, food, and services. Existing platforms give inspiration but not personalization or complete planning support, so finding options that match style, preferences, and budget is confusing.</div>
+    <div class="row"><div class="lbl">Target customers</div>Families · couples · young professionals · college students · young adults</div>
+    <div class="row"><div class="lbl">Solution</div>EventEZ brings inspiration, vendors, budgeting, and planning together in one place, with personalized recommendations based on event type, style, preferences, and budget.</div>
+  </div>
+  <p class="why"><b>Read:</b> "all-in-one" is doing a lot of work here — inspiration is Pinterest, vendors is a marketplace, budgeting is a spreadsheet, planning is project management. Four products, five customer segments, no named event type. And events are a <b>low-frequency</b> purchase, which quietly breaks the consumer-app math. The grilling should force one event type, one city, one paying customer.</p>
+</section>
+
+<section>
+  <h2><span class="no">1</span>Problem validation &amp; frequency</h2>
+  <p class="why">The frequency question decides whether this can be a consumer app at all. You can't build a habit around something people do twice a year.</p>
+  <ul class="q">
+    <li>How many events needing hired vendors does your target customer plan <b>per year</b>? Say the number out loud.</li>
+    <li>If the answer is one or two, you pay to acquire a customer who may never return. How does that math work?</li>
+    <li>Who have you talked to that recently planned an event? What did they actually struggle with — finding vendors, or <b>trusting</b> and negotiating with them?</li>
+    <li>Is the stress "too many platforms," or is it "I don't know who's good and what's a fair price"? Those are different products.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">2</span>Scoping — which event, which city</h2>
+  <p class="why">Weddings, birthdays, college fests, and corporate offsites share almost nothing: budgets, vendors, decision-makers, and seasons all differ.</p>
+  <ul class="q">
+    <li><b>Pick one event type.</b> Which one is version 1: birthdays? college fests? engagement functions? Why that one?</li>
+    <li>Vendors are local. Which one city — and within it, which neighborhoods — do you launch in?</li>
+    <li>Their target list is five segments. Which single segment plans this event type most often and pays fastest?</li>
+    <li>You're on a campus with 30+ student clubs running fests and functions. Is <b>college events at SRM AP</b> the obvious first market you're overlooking?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">3</span>The vendor side</h2>
+  <p class="why">The customer-facing app is the easy half. Supply — decorators, caterers, venues — is offline, relationship-driven, and busy on weekends.</p>
+  <ul class="q">
+    <li>How many vendors do you need for a credible day-one catalog in one event type? How many have you spoken to?</li>
+    <li>Why does a good decorator join? They're already booked through word of mouth. What do you bring them — demand, or just another listing to maintain?</li>
+    <li>Who vouches for quality? What happens when the caterer shows up late to a wedding you recommended — whose reputation takes the hit, and what's your recourse?</li>
+    <li>How do vendors quote? Event pricing is negotiated, not listed. Can your platform even show a real price?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">4</span>Competition &amp; today's alternative</h2>
+  <p class="why">Today's alternative isn't a platform. It's WhatsApp, Instagram, JustDial, and the aunt who knows a decorator.</p>
+  <ul class="q">
+    <li>WedMeGood and WeddingWire won the wedding vertical; JustDial lists everyone; Instagram is the inspiration engine. <b>What's the gap they all left, precisely?</b></li>
+    <li>Nobody has won non-wedding consumer events in India. Is that because nobody tried — or because low frequency plus offline trust makes it a bad business? Argue the second position, then rebut it.</li>
+    <li>Your customer's current process is free: ask friends, call three vendors, negotiate. What makes yours enough better that they change behavior?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">5</span>Personalization &amp; the business model</h2>
+  <p class="why">"Personalized recommendations" needs data and inventory they won't have on day one. And the revenue model has a leak.</p>
+  <ul class="q">
+    <li>Personalized from what? With 30 vendors in one city, every user sees the same 30 vendors. What does personalization mean in month one?</li>
+    <li>How do you make money: commission on bookings? subscription? lead fees? Pick one and defend it.</li>
+    <li>The user finds a decorator on EventEz, then calls them directly and negotiates on WhatsApp. <b>Where's your commission?</b> What survives disintermediation — payments, contracts, dispute protection?</li>
+    <li>What's the average booking value for your chosen event type, and your take on it? Does that cover acquiring the customer who books twice a year?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">6</span>Scoping &amp; MVP</h2>
+  <p class="why">The riskiest assumption is behavioral: will someone hand their event to a platform instead of their own phone contacts? Testable in two weeks with no code.</p>
+  <ul class="q">
+    <li>The concierge test: <b>plan five real events yourselves</b> — a birthday, a club fest, a farewell — via WhatsApp and a spreadsheet. Charge a real fee. What did you learn?</li>
+    <li>What can you learn in two weeks for under ₹5,000? (A one-page "we plan your birthday, fixed price" offer posted in campus groups; count who pays a deposit.)</li>
+    <li>What's the pass mark, committed in advance — how many paid bookings makes this real, and what happens if you miss it?</li>
+    <li>Which do you build first with software: the vendor directory, the booking flow, or nothing — because WhatsApp is the MVP?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">7</span>Team &amp; resources</h2>
+  <ul class="q">
+    <li>Has anyone on the team planned a real event with a budget — a fest, a family function? What broke?</li>
+    <li>Who on the team will do vendor sales — walking into shops, negotiating listings? That's the actual job for the first six months.</li>
+    <li>What does month one cost, and what revenue arrives in month one?</li>
+  </ul>
+</section>
+
+<div class="killshot">
+  <div class="lbl">The kill-shot question</div>
+  <p>"Which single event type, in which city, is version one — and how many times a year does that customer plan it?"</p>
+  <div class="after">If the answer is "all events, everywhere" — that's four products for five segments at twice a year. The frequency number decides whether this is a business or a directory.</div>
+</div>
+
+<section>
+  <h2>Facts for the mentor table</h2>
+  <div class="facts">
+    <ul>
+      <li>Low-frequency marketplaces survive on high transaction value and take rate (weddings), or by owning a repeat buyer (corporate events, college clubs) — not on consumer habit.</li>
+      <li>WedMeGood is the proof that the winning move in Indian events was one vertical (weddings), not all-in-one.</li>
+      <li>Event vendor pricing is negotiated and seasonal; listed prices are rarely real, which undermines pure directory models.</li>
+      <li>Disintermediation is the default: the platform makes the introduction, WhatsApp takes the relationship.</li>
+      <li>The concierge MVP (plan events manually, charge for it) is the standard first test for planning platforms — it validates demand and teaches the vendor economics at once.</li>
+    </ul>
+    <p class="cv">Grilling context, not gospel — the students should bring real vendor conversations and a real booking-value number. That's the point.</p>
+  </div>
+</section>
+
+<footer>
+  <span>PRARAMBH Deep Dive Workshop · SRM University AP · 28–30 Aug 2026</span>
+  <span>Source: responses-1.xlsx (Final sheet)</span>
+</footer>
+
+</div>

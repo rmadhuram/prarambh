@@ -1,0 +1,463 @@
+<title>The PRARAMBH Cohort</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --paper: #fbfaf7;
+    --ink: #1c2333;
+    --ink-soft: #4a5268;
+    --accent: #e8720c;
+    --accent-soft: #fdeedd;
+    --indigo: #2b3a8c;
+    --indigo-chip: #e6e9f7;
+    --indigo-chip-ink: #2b3a8c;
+    --card: #ffffff;
+    --line: #e2ddd2;
+    --line-strong: #c9c5ba;
+    --warn-bg: #fbe9e4;
+    --warn-ink: #a13c1c;
+    --note-bg: #f1efe8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161f;
+      --ink: #eceef5;
+      --ink-soft: #a0a8bf;
+      --accent: #f68a2e;
+      --accent-soft: #33261a;
+      --indigo: #93a1e8;
+      --indigo-chip: #232a45;
+      --indigo-chip-ink: #aab5ef;
+      --card: #1c1f2c;
+      --line: #2b2f40;
+      --line-strong: #3a3f55;
+      --warn-bg: #3a221c;
+      --warn-ink: #f0a58a;
+      --note-bg: #20232f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161f;
+    --ink: #eceef5;
+    --ink-soft: #a0a8bf;
+    --accent: #f68a2e;
+    --accent-soft: #33261a;
+    --indigo: #93a1e8;
+    --indigo-chip: #232a45;
+    --indigo-chip-ink: #aab5ef;
+    --card: #1c1f2c;
+    --line: #2b2f40;
+    --line-strong: #3a3f55;
+    --warn-bg: #3a221c;
+    --warn-ink: #f0a58a;
+    --note-bg: #20232f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    padding: 0 24px 72px;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+
+  a { color: var(--indigo); }
+  a:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ---------- header ---------- */
+  header { padding: 52px 0 26px; border-bottom: 3px solid var(--ink); }
+  .kicker {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: clamp(34px, 5vw, 52px);
+    font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.05; margin-top: 8px;
+    text-wrap: balance;
+  }
+  .lede { margin-top: 12px; max-width: 62ch; color: var(--ink-soft); font-size: 15.5px; }
+
+  .statrow { display: flex; flex-wrap: wrap; gap: 34px; margin-top: 26px; }
+  .stat .n {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 30px; font-weight: 800; letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l { font-size: 12px; color: var(--ink-soft); letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+
+  /* ---------- category nav ---------- */
+  nav {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 18px 0; border-bottom: 1px solid var(--line-strong);
+  }
+  nav a {
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    color: var(--indigo-chip-ink);
+    background: var(--indigo-chip);
+    padding: 5px 12px; border-radius: 999px;
+  }
+  nav a .ct { opacity: .65; margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 44px; }
+  .sechead { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+  .sechead h2 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 21px; font-weight: 800; letter-spacing: -0.01em;
+    scroll-margin-top: 24px;
+  }
+  .sechead .count {
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .sechead .rule { flex: 1; height: 1px; background: var(--line-strong); align-self: center; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }
+
+  /* ---------- cards ---------- */
+  article {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 18px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+    scroll-margin-top: 24px;
+  }
+  article h3 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .sector {
+    font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  article p { font-size: 13.5px; color: var(--ink-soft); }
+  article p b { color: var(--ink); font-weight: 600; }
+  .cardfoot {
+    margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .badge {
+    font-size: 11px; font-weight: 700; letter-spacing: .04em;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .badge.warn { background: var(--warn-bg); color: var(--warn-ink); }
+  .badge.note { background: var(--note-bg); color: var(--ink-soft); }
+  .badge.hw   { background: var(--indigo-chip); color: var(--indigo-chip-ink); }
+  .badge.mvp  { background: var(--accent-soft); color: var(--accent); }
+
+  footer {
+    margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line-strong);
+    font-size: 12.5px; color: var(--ink-soft);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">PRARAMBH Deep Dive Workshop · SRM University AP · 28–30 Aug 2026</div>
+  <h1>The PRARAMBH Cohort</h1>
+  <p class="lede">All 31 student ventures in the workshop, grouped by category. Each team here gets its own page as the mentoring notes grow.</p>
+  <div class="statrow">
+    <div class="stat"><div class="n">31</div><div class="l">Teams</div></div>
+    <div class="stat"><div class="n">8</div><div class="l">Categories</div></div>
+    <div class="stat"><div class="n">25</div><div class="l">Pure software</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">Hardware + software</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">No software</div></div>
+  </div>
+</header>
+
+<nav aria-label="Categories">
+  <a href="#agritech">AgriTech <span class="ct">6</span></a>
+  <a href="#health">Health / MedTech <span class="ct">3</span></a>
+  <a href="#fintech">FinTech <span class="ct">3</span></a>
+  <a href="#cybersecurity">Cybersecurity <span class="ct">3</span></a>
+  <a href="#ai">AI / Productivity <span class="ct">4</span></a>
+  <a href="#services">Services / Home <span class="ct">5</span></a>
+  <a href="#sustainability">Sustainability / CleanTech <span class="ct">4</span></a>
+  <a href="#consumer">Consumer / Lifestyle <span class="ct">3</span></a>
+</nav>
+
+<section>
+  <div class="sechead"><h2 id="agritech">AgriTech</h2><span class="count">6 teams</span><div class="rule"></div></div>
+  <div class="grid">
+    <article id="trinetra">
+      <h3>Trinetra</h3>
+      <div class="sector">Agriculture · Saffron</div>
+      <p><b>Problem:</b> Geography and climate decide where and how much saffron India can produce.</p>
+      <p><b>Solution:</b> Aeroponic (soil-less) cultivation — roots suspended in air, misted with nutrient solution — to grow saffron anywhere, at scale.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Vijay</span><span class="badge note">Also listed as Trientra</span><span class="badge note">No software</span><a href="https://claude.ai/code/artifact/ea2bd517-aeaa-41d0-bb19-7702a0a0f6f4" style="margin-left:auto; font-weight:700; font-size:12px; text-decoration:none;">Deep dive →</a></div>
+    </article>
+    <article id="green-genesis">
+      <h3>Green Genesis</h3>
+      <div class="sector">AgriTech · Organic food</div>
+      <p><b>Problem:</b> Consumers can't verify that food labeled organic is genuinely chemical-free; honest farmers can't prove it.</p>
+      <p><b>Solution:</b> A platform connecting verified organic farmers directly with health-conscious consumers.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Rakesh</span><span class="badge warn">Potential CoI</span><a href="https://claude.ai/code/artifact/86b4c17a-21bf-4e1d-808f-a5e191825f8e" style="margin-left:auto; font-weight:700; font-size:12px; text-decoration:none;">Deep dive →</a></div>
+    </article>
+    <article id="crop-pilots">
+      <h3>Crop Pilots</h3>
+      <div class="sector">AgriTech · Decision support</div>
+      <p><b>Problem:</b> Farmers make high-value decisions with fragmented information.</p>
+      <p><b>Solution:</b> One AI platform connecting the whole farming decision cycle, for small farmers through FPOs.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Srinath</span></div>
+    </article>
+    <article id="biobyte">
+      <h3>BioByte</h3>
+      <div class="sector">AgriTech · Bioeconomy logistics</div>
+      <p><b>Problem:</b> Over 40% of bioeconomy value is lost to raw agricultural decay during static transit.</p>
+      <p><b>Solution:</b> Bio-OS — an asset-light software operating system orchestrating the bioeconomy from farm to factory.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Srinath</span></div>
+    </article>
+    <article id="astra">
+      <h3>Astra</h3>
+      <div class="sector">AgriTech · Market access</div>
+      <p><b>Problem:</b> Small and marginal farmers with low digital literacy struggle to reach fair markets, services, and timely information.</p>
+      <p><b>Solution:</b> An AI-powered, voice-first platform connecting farmers directly with buyers, inputs, equipment, and logistics.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Raj</span></div>
+    </article>
+    <article id="dream-it">
+      <h3>Dream It</h3>
+      <div class="sector">Pharmacy supply chain</div>
+      <p><b>Problem:</b> Small medical shops face stock-outs, unreliable suppliers, high procurement costs, and hard inventory management.</p>
+      <p><b>Solution:</b> A subscription platform connecting small medical shops with reliable suppliers, plus inventory management.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Raj</span><span class="badge note">Agri track per Raj (sheet says med tech)</span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2 id="health">Health / MedTech</h2><span class="count">3 teams</span><div class="rule"></div></div>
+  <div class="grid">
+    <article id="neuronest">
+      <h3>NeuroNest</h3>
+      <div class="sector">HealthTech · Autism screening</div>
+      <p><b>Problem:</b> Autism identification in India is bottlenecked by scarce specialists, long waits, and high assessment costs.</p>
+      <p><b>Solution:</b> An AI-powered digital screening and care-navigation platform for parents of children aged 2–8.</p>
+      <div class="cardfoot"><span>Mentor: Ms. Padma</span><span class="badge mvp">MVP stage</span></div>
+    </article>
+    <article id="med-rakshaks">
+      <h3>Med Rakshaks</h3>
+      <div class="sector">Health · Anti-counterfeit</div>
+      <p><b>Problem:</b> Fake medicine circulation in India.</p>
+      <p><b>Solution:</b> Blockchain-tracked medicines: each unit gets a unique QR/NFC ID that pharmacies and patients can verify.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Raj</span></div>
+    </article>
+    <article id="ayush-plus">
+      <h3>Ayush Plus</h3>
+      <div class="sector">Medical devices · Cardiac</div>
+      <p><b>Problem:</b> Heart attacks and irregular beats go undetected between check-ups.</p>
+      <p><b>Solution:</b> Continuous heart monitoring with prediction of heart attacks and arrhythmia detection.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Raj</span><span class="badge hw">Hardware + software</span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2 id="fintech">FinTech</h2><span class="count">3 teams</span><div class="rule"></div></div>
+  <div class="grid">
+    <article id="aven">
+      <h3>Aven Venture Pvt. Ltd.</h3>
+      <div class="sector">PE / FinTech · Diligence</div>
+      <p><b>Problem:</b> M&amp;A, PE, and IB deal teams run first-pass diligence by hand, manually cross-checking financial statements.</p>
+      <p><b>Solution:</b> An AI diligence analyst: upload a company's financial and legal documents, Aven extracts and cross-references every claim.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Vijay</span></div>
+    </article>
+    <article id="stellaris">
+      <h3>Stellaris</h3>
+      <div class="sector">FinTech · CA workflows</div>
+      <p><b>Problem:</b> CA firms manage critical workflows manually across disconnected tools.</p>
+      <p><b>Solution:</b> An AI workflow layer that automates the work around accounting: collects client documents, extracts, and reconciles.</p>
+      <div class="cardfoot"><span>Mentor: Ms. Padma</span></div>
+    </article>
+    <article id="srmpay">
+      <h3>SRMPAY</h3>
+      <div class="sector">FinTech · Campus payments</div>
+      <p><b>Problem:</b> SRM students hit temporary payment gaps for campus purchases when funds run short.</p>
+      <p><b>Solution:</b> A campus-only QR payment platform where verified students pay vendors now and settle later.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Raj</span><span class="badge note">Worked ERD example in the deck</span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2 id="cybersecurity">Cybersecurity</h2><span class="count">3 teams</span><div class="rule"></div></div>
+  <div class="grid">
+    <article id="chain-of-trust">
+      <h3>Chain Of Trust</h3>
+      <div class="sector">Trust infrastructure · GovTech</div>
+      <p><b>Problem:</b> Examination and recruitment bodies face question paper leaks and unauthorized access.</p>
+      <p><b>Solution:</b> An AI-powered trust infrastructure platform that prevents exam paper leaks and data breaches before they occur.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Srinath</span></div>
+    </article>
+    <article id="elyon-cloud">
+      <h3>ELYON CLOUD</h3>
+      <div class="sector">Enterprise · Post-quantum crypto</div>
+      <p><b>Problem:</b> Enterprises run on RSA/ECC encryption that quantum computers will break; attackers harvest data now to decrypt later.</p>
+      <p><b>Solution:</b> Automated middleware that migrates enterprises to NIST FIPS 203/204 quantum-safe encryption with zero production code changes.</p>
+      <div class="cardfoot"><span>Mentor: Ms. Padma</span><a href="https://claude.ai/code/artifact/9f16a9c8-1689-48c5-b9c5-f4c55fd10866" style="margin-left:auto; font-weight:700; font-size:12px; text-decoration:none;">Deep dive →</a></div>
+    </article>
+    <article id="haven">
+      <h3>Haven</h3>
+      <div class="sector">Kid-safe tech</div>
+      <p><b>Problem:</b> Kids aged 5–10 share their parents' phones, with constant risk of accidental exposure to adult content.</p>
+      <p><b>Solution:</b> An app that keeps the phone kid-safe by default; parents unlock instantly with fingerprint or Face ID.</p>
+      <div class="cardfoot"><span>Mentor: Ms. Padma</span><span class="badge note">Added 29 Aug</span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2 id="ai">AI / Productivity</h2><span class="count">4 teams</span><div class="rule"></div></div>
+  <div class="grid">
+    <article id="omni">
+      <h3>OMNI</h3>
+      <div class="sector">AI · Workspace</div>
+      <p><b>Problem:</b> One task needs multiple apps — constant switching and scattered information.</p>
+      <p><b>Solution:</b> An AI-native workspace: tell it the goal, it gathers context and carries out the task across tools.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Vijay</span></div>
+    </article>
+    <article id="docsathi">
+      <h3>DocSathi</h3>
+      <div class="sector">AI · Government paperwork</div>
+      <p><b>Problem:</b> 300M+ citizens struggle with government documentation: complex, English-only, fragmented forms.</p>
+      <p><b>Solution:</b> An AI platform with step-by-step form-filling guidance, document scanning, and personalized checklists.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Srinath</span></div>
+    </article>
+    <article id="pepper-ai">
+      <h3>Pepper AI</h3>
+      <div class="sector">Personal knowledge management</div>
+      <p><b>Problem:</b> People save huge amounts of content — reels, articles, voice notes, screenshots — and never find it again.</p>
+      <p><b>Solution:</b> Save anything into one place; Pepper transcribes, understands, and resurfaces it when needed.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Srinath</span></div>
+    </article>
+    <article id="s-t-sundar">
+      <h3>S T Sundar</h3>
+      <div class="sector">AI · Rail transport</div>
+      <p><b>Problem:</b> Indian Railways suffers from static seat-inventory allocation — trains show "waitlisted" while seats sit empty on segments.</p>
+      <p><b>Solution:</b> Algorithmic split-ticketing that scans multi-station quotas to construct guaranteed same-train or cross-train journeys.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Srinath</span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2 id="services">Services / Home</h2><span class="count">5 teams</span><div class="rule"></div></div>
+  <div class="grid">
+    <article id="eventez">
+      <h3>EventEz</h3>
+      <div class="sector">Services · Events</div>
+      <p><b>Problem:</b> Planning an event means searching across many platforms — stressful and slow.</p>
+      <p><b>Solution:</b> An all-in-one event planning platform: inspiration, vendors, budgeting, and planning in one place.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Vijay</span><a href="https://claude.ai/code/artifact/7cf79a8a-d651-41cb-8c70-5c18d2246d78" style="margin-left:auto; font-weight:700; font-size:12px; text-decoration:none;">Deep dive →</a></div>
+    </article>
+    <article id="snfs">
+      <h3>SNFS</h3>
+      <div class="sector">Care services</div>
+      <p><b>Problem:</b> Urban migration and nuclear families have created a care deficit for infants and the elderly.</p>
+      <p><b>Solution:</b> A managed dual-care platform connecting families with verified medical caretakers and trained babysitters.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Rakesh</span><span class="badge warn">CoI — not used as example</span></div>
+    </article>
+    <article id="revolution-royals">
+      <h3>Revolution Royals</h3>
+      <div class="sector">Home services · HappyHome</div>
+      <p><b>Problem:</b> Working parents have no time to cook, clean, or care for kids; elderly parents live alone.</p>
+      <p><b>Solution:</b> HappyHome: verified cook, cleaner, nanny, and night guardian on one subscription, with doctor on call 24/7.</p>
+      <div class="cardfoot"><span>Mentors: Ms. Padma · Mr. Raj · Mr. Rakesh</span><span class="badge note">3 entries, one team</span></div>
+    </article>
+    <article id="dbd">
+      <h3>DBD</h3>
+      <div class="sector">Digital services · Freelancing</div>
+      <p><b>Problem:</b> Many talented people in India never get the opportunity to earn from their skills.</p>
+      <p><b>Solution:</b> An India-first freelancing marketplace connecting students and skilled beginners with clients — trusted profiles, local payments.</p>
+      <div class="cardfoot"><span>Mentor: Ms. Padma</span></div>
+    </article>
+    <article id="cash">
+      <h3>Cash</h3>
+      <div class="sector">Roadside assistance</div>
+      <p><b>Problem:</b> Vehicle breakdowns leave owners stranded without reliable help.</p>
+      <p><b>Solution:</b> An online service that gets any vehicle owner breakdown help from anywhere.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Rakesh</span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2 id="sustainability">Sustainability / CleanTech</h2><span class="count">4 teams</span><div class="rule"></div></div>
+  <div class="grid">
+    <article id="bhharrat-energy">
+      <h3>BHHARRAT ENERGY</h3>
+      <div class="sector">Clean energy · Green hydrogen</div>
+      <p><b>Problem:</b> Green hydrogen is held back by electrolyser efficiency and high electricity usage.</p>
+      <p><b>Solution:</b> A more efficient electrolyser, cutting the major cost factor of green hydrogen production.</p>
+      <div class="cardfoot"><span>Mentor: Ms. Padma</span><span class="badge note">No software</span></div>
+    </article>
+    <article id="green-cycle">
+      <h3>GREEN CYCLE</h3>
+      <div class="sector">Recycling · Tyres</div>
+      <p><b>Problem:</b> Improper tyre disposal causes pollution and wastes valuable materials.</p>
+      <p><b>Solution:</b> A recycling facility converting waste tyres into recycled rubber, carbon black, and other products.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Raj</span><span class="badge note">No software</span></div>
+    </article>
+    <article id="aquarescue">
+      <h3>AQUARESCUE</h3>
+      <div class="sector">WaterTech · Purification</div>
+      <p><b>Problem:</b> In floods, emergencies, and expeditions, safe drinking water is out of reach.</p>
+      <p><b>Solution:</b> A portable multi-stage purifier that turns muddy, contaminated water into safer drinking water.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Srinath</span><span class="badge note">No software</span></div>
+    </article>
+    <article id="abhyudaya">
+      <h3>Team ABHYUDAYA</h3>
+      <div class="sector">Circular economy · Fashion</div>
+      <p><b>Problem:</b> The fashion industry discards valuable fabrics and fibers as textile waste.</p>
+      <p><b>Solution:</b> ReTex Loop: collect textile waste, sort by material and quality, convert via the highest-value path — reuse, upcycle, recycle.</p>
+      <div class="cardfoot"><span>Mentor: Ms. Padma</span><span class="badge note">No software</span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2 id="consumer">Consumer / Lifestyle</h2><span class="count">3 teams</span><div class="rule"></div></div>
+  <div class="grid">
+    <article id="desi9">
+      <h3>Desi9</h3>
+      <div class="sector">Fashion tech</div>
+      <p><b>Problem:</b> Young people (18–28) want outfits designed their way, without tedious manual photography and fitting.</p>
+      <p><b>Solution:</b> Instant onboarding via standardized templates and vision AI (YOLO, SAM) for custom clothing design.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Raj</span></div>
+    </article>
+    <article id="pet-orbit">
+      <h3>Pet Orbit</h3>
+      <div class="sector">Pet tech · Boarding</div>
+      <p><b>Problem:</b> India's pet boarding ecosystem is fragmented; owners can't find reliable, transparent care.</p>
+      <p><b>Solution:</b> A trusted network of existing pet care centers with standardized quality, verified listings, and online booking.</p>
+      <div class="cardfoot"><span>Mentor: Ms. Padma</span></div>
+    </article>
+    <article id="genesis">
+      <h3>Genesis</h3>
+      <div class="sector">Travel</div>
+      <p><b>Problem:</b> Travellers don't lack information; they lack information they can confidently act on.</p>
+      <p><b>Solution:</b> Journi: a personalized travel decision platform that turns budget, dates, and interests into a practical itinerary.</p>
+      <div class="cardfoot"><span>Mentor: Mr. Srinath</span></div>
+    </article>
+  </div>
+</section>
+
+<footer>
+  <span>Source: responses-1.xlsx (Final sheet), 29 Aug 2026 · Trinetra/Trientra merged · Revolution Royals ×3 merged</span>
+  <span>PRARAMBH Deep Dive Workshop · SRM University AP</span>
+</footer>
+
+</div>

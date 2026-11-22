@@ -1,0 +1,275 @@
+<title>ELYON CLOUD Deep Dive</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --paper: #fbfaf7;
+    --ink: #1c2333;
+    --ink-soft: #4a5268;
+    --accent: #e8720c;
+    --accent-soft: #fdeedd;
+    --indigo: #2b3a8c;
+    --indigo-chip: #e6e9f7;
+    --indigo-chip-ink: #2b3a8c;
+    --card: #ffffff;
+    --line: #e2ddd2;
+    --line-strong: #c9c5ba;
+    --warn-bg: #fbe9e4;
+    --warn-ink: #a13c1c;
+    --note-bg: #f1efe8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161f;
+      --ink: #eceef5;
+      --ink-soft: #a0a8bf;
+      --accent: #f68a2e;
+      --accent-soft: #33261a;
+      --indigo: #93a1e8;
+      --indigo-chip: #232a45;
+      --indigo-chip-ink: #aab5ef;
+      --card: #1c1f2c;
+      --line: #2b2f40;
+      --line-strong: #3a3f55;
+      --warn-bg: #3a221c;
+      --warn-ink: #f0a58a;
+      --note-bg: #20232f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161f;
+    --ink: #eceef5;
+    --ink-soft: #a0a8bf;
+    --accent: #f68a2e;
+    --accent-soft: #33261a;
+    --indigo: #93a1e8;
+    --indigo-chip: #232a45;
+    --indigo-chip-ink: #aab5ef;
+    --card: #1c1f2c;
+    --line: #2b2f40;
+    --line-strong: #3a3f55;
+    --warn-bg: #3a221c;
+    --warn-ink: #f0a58a;
+    --note-bg: #20232f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    padding: 0 24px 72px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+
+  a { color: var(--indigo); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .backlink { font-size: 13px; font-weight: 600; text-decoration: none; }
+
+  header { padding: 44px 0 24px; border-bottom: 3px solid var(--ink); }
+  .kicker {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 18px;
+  }
+  h1 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: clamp(36px, 6vw, 54px);
+    font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.02; margin-top: 6px;
+  }
+  .sub { margin-top: 8px; font-size: 16px; color: var(--ink-soft); }
+  .metarow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .chip {
+    font-size: 12px; font-weight: 700; letter-spacing: .03em;
+    padding: 3px 10px; border-radius: 999px;
+    background: var(--indigo-chip); color: var(--indigo-chip-ink);
+  }
+  .chip.note { background: var(--note-bg); color: var(--ink-soft); }
+
+  section { margin-top: 38px; }
+  h2 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 22px; font-weight: 800; letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  h2 .no { color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  section > p { margin-top: 10px; max-width: 68ch; }
+  .why { margin-top: 10px; font-size: 14px; color: var(--ink-soft); max-width: 68ch; }
+  .why b { color: var(--ink); font-weight: 600; }
+
+  .submitted { margin-top: 14px; display: grid; gap: 10px; }
+  .submitted .row {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; font-size: 14px;
+  }
+  .submitted .lbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 3px;
+  }
+
+  ul.q { margin-top: 12px; list-style: none; display: grid; gap: 8px; }
+  ul.q li {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 11px 15px; font-size: 14.5px;
+  }
+  ul.q li b { font-weight: 600; }
+
+  .killshot {
+    margin-top: 44px;
+    background: var(--accent-soft); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 22px 26px;
+  }
+  .killshot .lbl {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .killshot p {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 21px; font-weight: 700; letter-spacing: -0.01em;
+    margin-top: 8px; line-height: 1.3; text-wrap: balance;
+  }
+  .killshot .after { font-size: 14px; font-weight: 400; color: var(--ink-soft); margin-top: 10px; }
+
+  .facts {
+    margin-top: 14px;
+    background: var(--note-bg); border: 1px solid var(--line-strong); border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .facts ul { margin: 6px 0 0 18px; font-size: 14px; display: grid; gap: 6px; }
+  .facts .cv { font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+
+  footer {
+    margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line-strong);
+    font-size: 12.5px; color: var(--ink-soft);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+
+<div class="wrap">
+
+<header>
+  <a class="backlink" href="https://claude.ai/code/artifact/8d37fe34-032c-4584-ba63-de6354566045">← The PRARAMBH Cohort</a>
+  <div class="kicker">Team Deep Dive · Cybersecurity</div>
+  <h1>ELYON CLOUD</h1>
+  <p class="sub">Automated middleware that migrates enterprises to post-quantum encryption — "Discover, Migrate, Verify" with zero production code changes.</p>
+  <div class="metarow">
+    <span class="chip">Mentor: Ms. Padma</span>
+    <span class="chip note">Pure software</span>
+    <span class="chip note">Most polished submission in the cohort</span>
+  </div>
+</header>
+
+<section>
+  <h2>What they submitted</h2>
+  <div class="submitted">
+    <div class="row"><div class="lbl">Problem</div>Enterprises run on RSA/ECC encryption that quantum computers will eventually break. Attackers already practice "Harvest Now, Decrypt Later." Manual migration takes years; regulatory deadlines are closing in. Cites DigiCert/Bain 2026: 85% of security leaders expect quantum to break current encryption within a decade; 90% of enterprises have no defense.</div>
+    <div class="row"><div class="lbl">Target customers</div>Regulated, high-sensitivity enterprises: banking &amp; payments, healthcare, defense contractors — facing HNDL exposure, long data-retention laws, and federal PQC compliance mandates.</div>
+    <div class="row"><div class="lbl">Solution</div>An automated middleware wrapper migrating enterprises to NIST FIPS 203/204 quantum-safe encryption with zero production code changes: Discover, Migrate, Verify.</div>
+  </div>
+  <p class="why"><b>Read:</b> the opposite problem from most of the cohort. The market is real, the deadlines are real, the vocabulary is flawless — this reads like a funded seed deck. The grilling should test whether there's anything <b>underneath</b> the vocabulary: the "zero code changes" claim is technically enormous, and the chosen customers (banks, defense) are the hardest buyers on earth for a student team. Push on depth, not polish.</p>
+</section>
+
+<section>
+  <h2><span class="no">1</span>The "zero code changes" claim</h2>
+  <p class="why">This is the whole product. Encryption isn't one thing you wrap — it's scattered through TLS, databases, HSMs, signed firmware, tokens, and proprietary protocols.</p>
+  <ul class="q">
+    <li>Where does the middleware physically sit? A network proxy? A library shim? A sidecar? <b>Draw it</b> for one concrete case: a bank's TLS traffic, then its database-at-rest encryption.</li>
+    <li>TLS is the easy case — and it's already being solved without you: browsers, Cloudflare, and AWS ship hybrid post-quantum TLS today. If the easy layer is free, <b>your product lives in the hard residue</b>: HSMs, code signing, JWTs, proprietary protocols. Can those be wrapped with zero changes? Honestly?</li>
+    <li>ML-KEM keys and ML-DSA signatures are much larger than RSA/ECC. What breaks — packet sizes, certificate chains, latency budgets — and who fixes it if not production code?</li>
+    <li>"Discover" may be the real product: finding every place crypto is used in an enterprise (a crypto inventory) is a famous unsolved pain. How does your scanner find crypto inside a 20-year-old Java monolith?</li>
+    <li>What have you actually built so far? Show the demo — even wrapping one nginx server counts.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">2</span>Selling security to banks and defense — as students</h2>
+  <p class="why">The most trust-gated procurement on earth. Their chosen buyers are the hardest possible first customers.</p>
+  <ul class="q">
+    <li>Who is the buyer — title, department, budget line? What is a CISO's first question to a vendor that wants to touch their cryptography?</li>
+    <li>A security vendor needs SOC 2, penetration audits, reference customers, and often years of existence before a bank will pilot it. Defense adds clearances. <b>What's your path around that wall?</b></li>
+    <li>Is the realistic route a partner channel — selling through a Big 4 / systems integrator running the migration program — rather than direct? Have you talked to one?</li>
+    <li>Should the first customer be a bank at all — or a mid-size Indian SaaS company that needs a PQC-readiness report for its own enterprise customers?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">3</span>Competition</h2>
+  <p class="why">PQC migration is a hot, heavily funded space. The question is why this gap exists for a student team.</p>
+  <ul class="q">
+    <li>IBM, Thales, Entrust, SandboxAQ, PQShield — plus every cloud provider building PQC natively. <b>Map yourself against them.</b> Who does "automated migration middleware" today, and why will you beat them?</li>
+    <li>If cloud providers make PQC a checkbox on their platforms, what's left for a third-party wrapper? What survives that scenario?</li>
+    <li>What's defensible here: the scanner? migration playbooks per industry? Nothing yet? Say which.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">4</span>Urgency &amp; the budget question</h2>
+  <p class="why">"Eventually" is the hardest word in enterprise sales. Deadlines create the market — but whose deadline arrives first?</p>
+  <ul class="q">
+    <li>The threat is years out and the survey stats are vendor marketing (DigiCert sells certificates). <b>Which specific regulation, with which date</b>, forces which customer to spend money this fiscal year?</li>
+    <li>HNDL only matters for data that must stay secret for 10+ years. Which data at which customer actually qualifies? Name three examples.</li>
+    <li>Who has a budget line item for PQC migration today — in India specifically? RBI hasn't mandated it. Does your first market have to be the US federal supply chain, and can you reach it?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">5</span>Validation</h2>
+  <ul class="q">
+    <li>How many security leaders have you spoken to — not surveyed, spoken to? What did the most skeptical one say?</li>
+    <li>What would a CISO pay for <b>this year</b>: full migration, or just a credible crypto-inventory report for their board and regulators?</li>
+    <li>Every number in your pitch is from a vendor report. What's your primary evidence — one conversation, one pilot, one letter of intent?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">6</span>Scoping &amp; MVP</h2>
+  <p class="why">The wedge is probably the scanner, not the migration. Discovery is sellable as an audit, needs no production trust, and feeds compliance paperwork.</p>
+  <ul class="q">
+    <li>Smallest slice: a <b>crypto-discovery scanner</b> that produces a PQC-readiness report (a crypto bill of materials). Ship that alone — would someone pay ₹50k for the report? Who?</li>
+    <li>Two-week test: run the scanner on five large open-source codebases, publish the readiness reports, send them to twenty CISOs on LinkedIn. Count replies. What's the pass mark?</li>
+    <li>The demo that makes the pitch real: one server, hybrid PQC TLS, before/after packet capture on screen. Can you show that at this workshop's final pitch?</li>
+    <li>Sequencing: Discover as the product now, Migrate as the service later, Verify as the compliance upsell. Do you accept that ordering — and if not, what's yours?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">7</span>Team &amp; resources</h2>
+  <p class="why">Getting cryptography wrong is worse than not touching it. Credibility is the entire product in security.</p>
+  <ul class="q">
+    <li>Who on the team has implemented cryptography — even a TLS integration? Who reviews your crypto decisions?</li>
+    <li>Do you have a security-faculty advisor, and would you submit your wrapper to an external audit before any pilot?</li>
+    <li>Why this problem? What's the team's connection to security — or was this chosen because the market slide looks great? (An honest answer here is fine — but it changes the plan.)</li>
+  </ul>
+</section>
+
+<div class="killshot">
+  <div class="lbl">The kill-shot question</div>
+  <p>"Would you let a startup with no audit, no SOC 2, and no reference customer re-wrap your bank's encryption? Then why will a CISO?"</p>
+  <div class="after">The honest answer forces the real strategy: start with the scanner and the readiness report — the product a CISO can buy from a student team.</div>
+</div>
+
+<section>
+  <h2>Facts for the mentor table</h2>
+  <div class="facts">
+    <ul>
+      <li>The NIST standards are real and final (Aug 2024): FIPS 203 (ML-KEM, ex-Kyber), FIPS 204 (ML-DSA, ex-Dilithium), FIPS 205 (SLH-DSA). US CNSA 2.0 sets migration timelines into the 2030s.</li>
+      <li>Harvest-Now-Decrypt-Later is a genuine threat model — but only for data whose secrecy must outlive the quantum timeline (health records, state secrets, long-lived financial data).</li>
+      <li>Hybrid post-quantum TLS is already deployed at scale (Chrome, Cloudflare, AWS) — the easy layer is being solved without startups.</li>
+      <li>Crypto discovery/inventory (CBOM) is widely considered the unavoidable first step of any migration — and the most credible wedge product.</li>
+      <li>Funded players in the space include SandboxAQ, PQShield, and the incumbents (IBM, Thales, Entrust, DigiCert).</li>
+      <li>PQC key and signature sizes are substantially larger than RSA/ECC — "zero changes" collides with real packet-size and performance budgets.</li>
+    </ul>
+    <p class="cv">Grilling context, not gospel — the students should bring the specific mandate dates and a working demo. That's the point.</p>
+  </div>
+</section>
+
+<footer>
+  <span>PRARAMBH Deep Dive Workshop · SRM University AP · 28–30 Aug 2026</span>
+  <span>Source: responses-1.xlsx (Final sheet)</span>
+</footer>
+
+</div>

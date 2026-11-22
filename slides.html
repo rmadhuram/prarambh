@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problem to Solution — PRARAMBH Deep Dive 2026</title>
+<style>
+  :root {
+    --ink: #1c2333;
+    --ink-soft: #4a5268;
+    --paper: #fbfaf7;
+    --card: #ffffff;
+    --accent: #e8720c;        /* saffron */
+    --accent-soft: #fdeedd;
+    --indigo: #2b3a8c;
+    --indigo-soft: #e6e9f7;
+    --green: #1e7d4f;
+    --green-soft: #e2f2e9;
+    --red: #b3372c;
+    --red-soft: #fbe7e4;
+    --line: #e3e0d8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: #14161d;
+    font-family: -apple-system, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+  }
+  #viewport { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #stage {
+    width: 1280px; height: 720px;
+    position: relative;
+    transform-origin: center center;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    background: var(--paper);
+    border-radius: 6px;
+    padding: 58px 72px 64px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .slide.active { display: flex; }
+
+  /* ---------- typography ---------- */
+  .kicker {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+  }
+  h1 { font-size: 64px; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em; }
+  h2 { font-size: 42px; line-height: 1.12; font-weight: 800; letter-spacing: -0.015em; margin-bottom: 26px; }
+  h2 .thin { font-weight: 400; color: var(--ink-soft); }
+  h3 { font-size: 22px; font-weight: 700; }
+  p, li { font-size: 22px; line-height: 1.45; color: var(--ink); }
+  .muted { color: var(--ink-soft); }
+  .small { font-size: 17px; }
+  .accent { color: var(--accent); }
+  .indigo { color: var(--indigo); }
+  b, strong { font-weight: 700; }
+  ul.tight li { margin-bottom: 12px; }
+  .content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  /* ---------- footer ---------- */
+  .foot {
+    position: absolute; left: 72px; right: 72px; bottom: 22px;
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: #9aa0ae; letter-spacing: 0.06em;
+  }
+  #pagenum { position: absolute; right: 26px; bottom: 20px; font-size: 13px; color: #9aa0ae; }
+  #progress {
+    position: absolute; left: 0; bottom: 0; height: 5px;
+    background: var(--accent); width: 100%;
+    border-radius: 0 3px 3px 0;
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform .25s ease;
+  }
+
+  /* ---------- components ---------- */
+  .cols { display: flex; gap: 36px; }
+  .col { flex: 1; }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 22px 26px;
+    box-shadow: 0 1px 3px rgba(20,22,30,.05);
+  }
+  .card h3 { margin-bottom: 8px; }
+  .tag {
+    display: inline-block; font-size: 14px; font-weight: 700;
+    padding: 3px 12px; border-radius: 999px; letter-spacing: .04em;
+  }
+  .tag.orange { background: var(--accent-soft); color: var(--accent); }
+  .tag.blue   { background: var(--indigo-soft); color: var(--indigo); }
+  .tag.green  { background: var(--green-soft); color: var(--green); }
+  .tag.red    { background: var(--red-soft); color: var(--red); }
+
+  .bigquote {
+    font-size: 44px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em;
+    border-left: 3px solid var(--accent); padding-left: 34px;
+  }
+  .attrib { margin-top: 22px; font-size: 20px; color: var(--ink-soft); padding-left: 40px; }
+
+  .pg {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 22px 28px; margin-top: 22px;
+  }
+  .pg p { font-size: 24px; font-style: italic; line-height: 1.45; }
+  .pg .src { font-size: 16px; font-style: normal; color: var(--ink-soft); margin-top: 10px; }
+
+  .section-slide { background: var(--indigo); color: #fff; }
+  .section-slide .kicker { color: #ffb066; }
+  .section-slide h1 { color: #fff; font-size: 72px; }
+  .section-slide p { color: #cfd5f2; font-size: 26px; margin-top: 18px; max-width: 900px; }
+  .section-slide .foot { color: #7d88c4; }
+
+  .photo-slide { padding: 0; background: #0d0e12; }
+  .photo-slide img { width: 100%; height: 100%; object-fit: cover; opacity: .92; }
+  .photo-slide .caption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(transparent, rgba(10,10,14,.88) 45%);
+    padding: 90px 72px 40px; color: #fff;
+  }
+  .photo-slide .caption h2 { color: #fff; margin-bottom: 8px; font-size: 40px; }
+  .photo-slide .caption p { color: #d8d3c8; font-size: 21px; }
+  .photo-slide .credit { position: absolute; right: 16px; top: 12px; font-size: 11px; color: rgba(255,255,255,.55); }
+
+  table.simple { border-collapse: collapse; width: 100%; }
+  table.simple th {
+    text-align: left; font-size: 17px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-soft); padding: 8px 14px; border-bottom: 2px solid var(--ink);
+  }
+  table.simple td { padding: 11px 14px; font-size: 19px; line-height: 1.35; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.simple td:first-child { font-weight: 700; white-space: nowrap; }
+
+  .steps { display: flex; align-items: stretch; gap: 0; }
+  .step {
+    flex: 1; text-align: center; padding: 16px 8px;
+    border-top: 4px solid var(--line); font-size: 17px; font-weight: 600; color: var(--ink-soft);
+    position: relative;
+  }
+  .step.done { border-top-color: var(--green); color: var(--green); }
+  .step.here { border-top-color: var(--accent); color: var(--accent); font-weight: 800; font-size: 19px; }
+  .step .when { display: block; font-size: 13px; font-weight: 600; opacity: .75; margin-top: 4px; }
+
+  .numlist { counter-reset: n; list-style: none; }
+  .numlist li { counter-increment: n; margin-bottom: 16px; padding-left: 58px; position: relative; }
+  .numlist li::before {
+    content: counter(n); position: absolute; left: 0; top: -1px;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--indigo); color: #fff; font-weight: 800; font-size: 19px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .checklist { list-style: none; }
+  .checklist li { padding-left: 38px; position: relative; margin-bottom: 13px; }
+  .checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; font-size: 24px; top: -2px; }
+  .crosslist li::before { content: "✕"; color: var(--red); }
+
+  .pillrow { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+  .pill {
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 10px 18px; font-size: 19px; font-weight: 600;
+  }
+  .callout {
+    background: var(--accent-soft); border: 1px solid #f3cea4;
+    border-radius: 10px; padding: 18px 24px; font-size: 22px; font-weight: 600;
+  }
+  .callout.blue { background: var(--indigo-soft); border-color: #c3cbec; }
+  .callout.green { background: var(--green-soft); border-color: #bcdfcc; }
+
+  .vpc { display: flex; gap: 26px; align-items: stretch; }
+  .vpc .half { flex: 1; border-radius: 14px; padding: 20px 24px; }
+  .vpc .map { background: var(--indigo-soft); border: 2px solid var(--indigo); }
+  .vpc .profile { background: var(--accent-soft); border: 2px solid var(--accent); }
+  .vpc h3 { font-size: 20px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+  .vpc .map h3 { color: var(--indigo); }
+  .vpc .profile h3 { color: var(--accent); }
+  .vpc .row { margin-bottom: 12px; }
+  .vpc .lbl { font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-soft); }
+  .vpc p { font-size: 18.5px; line-height: 1.38; }
+  .fitarrow { align-self: center; font-size: 40px; color: var(--ink-soft); font-weight: 800; }
+
+  .ladder { display: flex; gap: 16px; align-items: flex-end; }
+  .rung { flex: 1; border-radius: 10px 10px 0 0; background: var(--indigo-soft); border: 1.5px solid var(--indigo); padding: 14px 12px 10px; text-align: center; }
+  .rung h4 { font-size: 18px; color: var(--indigo); margin-bottom: 6px; }
+  .rung p { font-size: 15px; line-height: 1.3; color: var(--ink-soft); }
+  .rung .cost { display:block; margin-top: 8px; font-size: 14px; font-weight: 800; color: var(--accent); }
+
+  .titlebar { height: 8px; width: 120px; background: var(--accent); border-radius: 4px; margin: 26px 0; }
+
+  .statrow { display: flex; gap: 30px; margin-top: 8px; }
+  .stat { flex: 1; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px 14px; }
+  .stat .n { font-size: 52px; font-weight: 800; color: var(--indigo); letter-spacing: -0.02em; }
+  .stat .n.orange { color: var(--accent); }
+  .stat .l { font-size: 17px; color: var(--ink-soft); margin-top: 6px; line-height: 1.3; }
+
+  .mindmap text { font-family: inherit; }
+
+  /* ---------- print ---------- */
+  @media print {
+    body { background: #fff; overflow: visible; }
+    #viewport { position: static; display: block; }
+    #stage { width: 1280px; height: auto; transform: none !important; }
+    .slide { display: flex !important; position: relative; height: 720px; margin: 0 auto; page-break-after: always; border-radius: 0; }
+    .photo-slide { display: block !important; }
+    #pagenum, #progress, #help { display: none !important; }
+  }
+  @page { size: 1280px 720px; margin: 0; }
+
+  #help {
+    position: fixed; left: 16px; bottom: 12px; font-size: 12px; color: #5a5f6e;
+    font-family: inherit; user-select: none;
+  }
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage">
+
+<!-- ═══════════════ 1 · TITLE ═══════════════ -->
+<section class="slide">
+  <div class="content">
+    <div class="kicker">PRARAMBH · Deep Dive Workshop · SRM University AP · Day 1</div>
+    <h1>Problem <span class="accent">→</span> Solution</h1>
+    <div class="titlebar"></div>
+    <p style="font-size:28px; max-width:880px;" class="muted">…and the joy of building things people want.</p>
+    <p style="margin-top:44px; font-size:22px;"><b>Raj Madhuram</b> &nbsp;·&nbsp; <span class="muted">Co-Founder &amp; CTO, C1X · 30+ years of building software · ex-Yahoo!</span></p>
+    <p class="muted small" style="margin-top:8px;">28 August 2026</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- ═══════════════ 2 · COLOUR GENIE ═══════════════ -->
+<section class="slide photo-slide">
+  <img src="assets/colour-genie.jpg" alt="EACA EG2000 Colour Genie home computer with cassette storage, joysticks and a TV as monitor">
+  <span class="credit">Photo: Frank Seger · Wikimedia Commons · CC BY-SA 3.0</span>
+  <div class="caption">
+    <h2>My first computer</h2>
+    <p>Colour Genie · Z80 8-bit microprocessor · <b>32 KB RAM</b> · 16 KB ROM · cassette tape for storage · a TV for a monitor</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 3 · WHAT IT TAUGHT ME ═══════════════ -->
+<section class="slide">
+  <h2>What that little machine taught me</h2>
+  <div class="content">
+    <div class="cols">
+      <div class="col card" style="padding:28px 26px;">
+        <span class="tag orange">The loop is the joy</span>
+        <p style="margin-top:12px;">Type → run → it works (or explodes) → fix → run again. That tight feedback loop is the addiction. Startups run the same loop; it's just called build–measure–learn.</p>
+      </div>
+      <div class="col card" style="padding:28px 26px;">
+        <span class="tag orange">Constraints breed creativity</span>
+        <p style="margin-top:12px;">32 KB forces you to decide what matters and throw out the rest. Remember that number. Scarcity is a feature; we'll come back to this.</p>
+      </div>
+      <div class="col card" style="padding:28px 26px;">
+        <span class="tag orange">The first user</span>
+        <p style="margin-top:12px;">Building for yourself is joy. Watching <b>someone else</b> use what you built is a bigger one. That second joy is the whole startup game.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Joy of Building</span></div>
+</section>
+
+<!-- ═══════════════ 4 · BUILDING AS A HABIT ═══════════════ -->
+<section class="slide">
+  <h2>Make building a habit, <span class="thin">not an event</span></h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:22px;">
+      <div class="col card">
+        <span class="tag orange">My QuizStar story</span>
+        <p style="margin-top:10px;">In Class XII I started building QuizStar, a system for conducting quizzes and self-development. Launched it in my first year at GCT. Nobody assigned it; that's the point.</p>
+      </div>
+      <div class="col card">
+        <span class="tag orange">Still my habit, 30 years on</span>
+        <p style="margin-top:10px;">Hobby projects like <b>Pcaisso</b> and <b>Fantasia</b> live on my weekends today. The habit of building hobby projects is exactly what let me build the cool things at work.</p>
+      </div>
+    </div>
+    <div class="pg" style="margin-top:0;">
+      <p>"The way to get startup ideas is not to try to think of startup ideas. It's to look for problems, preferably problems you have yourself."</p>
+      <p class="src">Paul Graham, <i>How to Get Startup Ideas</i> (2012). Scratch your own itch: Dropbox exists because Drew Houston kept forgetting his USB drive on a bus. SRMPay exists because its team hit a payment problem on this very campus.</p>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Joy of Building</span></div>
+</section>
+
+<!-- ═══════════════ 5 · COST COLLAPSE ═══════════════ -->
+<section class="slide">
+  <h2>The cost of building has collapsed</h2>
+  <div class="content">
+    <div class="statrow" style="margin-bottom:30px;">
+      <div class="stat"><div class="n">32 KB</div><div class="l">my Colour Genie, 1980s</div></div>
+      <div class="stat"><div class="n">~250,000×</div><div class="l">more RAM in the phone in your pocket</div></div>
+      <div class="stat"><div class="n orange">1 weekend</div><div class="l">what AI coding tools now make of "months of work"</div></div>
+    </div>
+    <p style="font-size:24px;">It has never been a better time to be building: open-source software, open hardware (Arduino, ESP32), and now AI tools like Claude Code. In 1995 a working product needed a team and a year. In 2026, a student team can ship one in days. Which means:</p>
+    <div class="callout" style="margin-top:22px; font-size:26px;">When building becomes cheap, <b>choosing what to build becomes the only hard part.</b> That's what this session is about.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>The Joy of Building</span></div>
+</section>
+
+<!-- ═══════════════ 6 · THE FAILURE STAT ═══════════════ -->
+<section class="slide">
+  <div class="content">
+    <div class="kicker">What happens when joyful builders skip the problem</div>
+    <div class="bigquote">The #1 reason startups fail is not bad technology.<br>It's building something <span class="accent">nobody needs</span>.</div>
+    <p class="attrib">~35% of startup post-mortems cite "no market need", the single largest cause (CB Insights). The most dangerous sentence in a pitch: <i>"We've built it — now we need to find users."</i></p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- ═══════════════ 7 · JOURNEY + AGENDA ═══════════════ -->
+<section class="slide">
+  <h2>Where we are, and where we're going</h2>
+  <div class="content">
+    <div class="steps" style="margin-bottom:38px;">
+      <div class="step done">Idea<span class="when">before today</span></div>
+      <div class="step done">Opportunity<span class="when">Session 1</span></div>
+      <div class="step done">Problem Validation<span class="when">Session 2</span></div>
+      <div class="step here">Solution Design<span class="when">THIS SESSION</span></div>
+      <div class="step">Business Model &amp; Pitch<span class="when">Session 4</span></div>
+      <div class="step">Mentoring + Jury<span class="when">Day 2 · Day 3</span></div>
+    </div>
+    <ol class="numlist">
+      <li><b>Ideation:</b> tools for generating many solutions from one problem</li>
+      <li><b>Scoping:</b> wells, craters, and the everything-platform trap</li>
+      <li><b>Fit &amp; reality checks:</b> value proposition, feasibility, opportunity</li>
+      <li><b>MVP:</b> how I'd build yours this weekend, plus two stories from my life</li>
+      <li><b>Build together:</b> team communication and documentation that actually work</li>
+      <li><b>Your turn:</b> a worksheet that feeds straight into tomorrow's 1-to-1s</li>
+    </ol>
+    <p class="muted small" style="margin-top:16px;">Your own submissions are the case studies: 34 teams, 26 at idea stage, 8 prototypes, 1 MVP.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- ═══════════════ 8 · SECTION: IDEATION ═══════════════ -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Part 1 of 5</div>
+    <h1>Ideation</h1>
+    <p>Your current solution is <b>one</b> of many possible answers to your problem. Before you commit, prove to yourself you picked the best one.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- ═══════════════ 9 · PROBLEM IS THE BRIEF / HMW ═══════════════ -->
+<section class="slide">
+  <h2>The problem statement is your design brief</h2>
+  <div class="content">
+    <p style="margin-bottom:18px;">Turn it into <b>"How Might We…"</b> questions; each framing opens different solutions. Take <b>Cauframe</b>'s validated problem: <i>PM2.5 pollution is driving a 60% rise in eye-infection OPD visits.</i></p>
+    <div class="cols">
+      <div class="col card">
+        <span class="tag blue">Narrow framing</span>
+        <p style="margin-top:10px;">HMW <b>physically block</b> particles from reaching the eyes?</p>
+        <p class="small muted" style="margin-top:8px;">→ protective eyewear with side shields (their answer)</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">Alternate framing</span>
+        <p style="margin-top:10px;">HMW <b>treat or soothe</b> pollution-irritated eyes affordably?</p>
+        <p class="small muted" style="margin-top:8px;">→ drops, wipes, clinics, tele-ophthalmology</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">Broad framing</span>
+        <p style="margin-top:10px;">HMW <b>reduce exposure</b> for outdoor workers altogether?</p>
+        <p class="small muted" style="margin-top:8px;">→ exposure alerts, employer safety kits</p>
+      </div>
+    </div>
+    <div class="callout blue" style="margin-top:26px;">Too broad → you boil the ocean. Too narrow → you've hidden the solution inside the question. Write 3–5 HMWs at different altitudes, then choose.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 1 · Ideation</span></div>
+</section>
+
+<!-- ═══════════════ 10 · MIND MAP ═══════════════ -->
+<section class="slide">
+  <h2>Tool #1: the mind map <span class="thin">(paper first, always)</span></h2>
+  <div class="content">
+    <svg class="mindmap" viewBox="0 0 1140 430" style="width:100%; height:auto;">
+      <!-- branch lines -->
+      <line x1="570" y1="215" x2="230" y2="90"  stroke="#e8720c" stroke-width="3"/>
+      <line x1="570" y1="215" x2="230" y2="330" stroke="#2b3a8c" stroke-width="3"/>
+      <line x1="570" y1="215" x2="910" y2="80"  stroke="#1e7d4f" stroke-width="3"/>
+      <line x1="570" y1="215" x2="920" y2="340" stroke="#b3372c" stroke-width="3"/>
+      <!-- twig lines -->
+      <line x1="230" y1="90"  x2="90"  y2="45"  stroke="#e8720c" stroke-width="1.6"/>
+      <line x1="230" y1="90"  x2="105" y2="130" stroke="#e8720c" stroke-width="1.6"/>
+      <line x1="230" y1="330" x2="90"  y2="290" stroke="#2b3a8c" stroke-width="1.6"/>
+      <line x1="230" y1="330" x2="110" y2="385" stroke="#2b3a8c" stroke-width="1.6"/>
+      <line x1="910" y1="80"  x2="1055" y2="42" stroke="#1e7d4f" stroke-width="1.6"/>
+      <line x1="910" y1="80"  x2="1060" y2="120" stroke="#1e7d4f" stroke-width="1.6"/>
+      <line x1="920" y1="340" x2="1060" y2="300" stroke="#b3372c" stroke-width="1.6"/>
+      <line x1="920" y1="340" x2="1055" y2="390" stroke="#b3372c" stroke-width="1.6"/>
+      <!-- center -->
+      <ellipse cx="570" cy="215" rx="150" ry="52" fill="#1c2333"/>
+      <text x="570" y="207" text-anchor="middle" fill="#fff" font-size="19" font-weight="700">PM2.5 eye infections</text>
+      <text x="570" y="231" text-anchor="middle" fill="#b8bdc9" font-size="15">(Cauframe's problem)</text>
+      <!-- branch nodes -->
+      <rect x="140" y="66" width="180" height="46" rx="10" fill="#fdeedd" stroke="#e8720c" stroke-width="1.5"/>
+      <text x="230" y="94" text-anchor="middle" fill="#e8720c" font-size="18" font-weight="700">Block particles</text>
+      <rect x="140" y="306" width="180" height="46" rx="10" fill="#e6e9f7" stroke="#2b3a8c" stroke-width="1.5"/>
+      <text x="230" y="334" text-anchor="middle" fill="#2b3a8c" font-size="18" font-weight="700">Treat irritation</text>
+      <rect x="818" y="56" width="184" height="46" rx="10" fill="#e2f2e9" stroke="#1e7d4f" stroke-width="1.5"/>
+      <text x="910" y="84" text-anchor="middle" fill="#1e7d4f" font-size="18" font-weight="700">Reduce exposure</text>
+      <rect x="826" y="316" width="188" height="46" rx="10" fill="#fbe7e4" stroke="#b3372c" stroke-width="1.5"/>
+      <text x="920" y="344" text-anchor="middle" fill="#b3372c" font-size="18" font-weight="700">Who pays? Who buys?</text>
+      <!-- twigs -->
+      <text x="85" y="40" text-anchor="end" font-size="16" fill="#4a5268">side-shield glasses</text>
+      <text x="100" y="136" text-anchor="end" font-size="16" fill="#4a5268">contact-style barrier</text>
+      <text x="85" y="286" text-anchor="end" font-size="16" fill="#4a5268">medicated drops</text>
+      <text x="105" y="392" text-anchor="end" font-size="16" fill="#4a5268">tele-ophthalmology</text>
+      <text x="1062" y="38" font-size="16" fill="#4a5268">exposure alerts</text>
+      <text x="1067" y="126" font-size="16" fill="#4a5268">employer safety kits</text>
+      <text x="1067" y="296" font-size="16" fill="#4a5268">workers · employers</text>
+      <text x="1062" y="396" font-size="16" fill="#4a5268">insurers · govt schemes</text>
+    </svg>
+    <p class="muted" style="margin-top:14px;">One rule: the center is the <b>problem</b>, never your solution. Branches are approaches; twigs are concrete ideas. 15 minutes of this beats 2 hours of arguing. Digital versions: Excalidraw, FigJam, Miro — but paper and a whiteboard are faster for round one.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 1 · Ideation</span></div>
+</section>
+
+<!-- ═══════════════ 11 · TOOLBOX ═══════════════ -->
+<section class="slide">
+  <h2>Tools #2–4: <span class="thin">use them this week, not someday</span></h2>
+  <div class="content">
+    <div class="cols">
+      <div class="col card">
+        <span class="tag orange">Crazy 8s</span>
+        <p style="margin-top:12px;">Fold a sheet into 8 panels. <b>8 sketches in 8 minutes</b>, each a different solution. Speed kills your inner censor; sketch 6 is usually the interesting one.</p>
+        <p class="small muted" style="margin-top:10px;">From Google Ventures' Design Sprint. Works with zero artistic skill.</p>
+      </div>
+      <div class="col card">
+        <span class="tag orange">Brainwriting 6-3-5</span>
+        <p style="margin-top:12px;">6 people <b>silently</b> write 3 ideas in 5 minutes, pass the sheet, build on what you receive. Two rounds = dozens of ideas.</p>
+        <p class="small muted" style="margin-top:10px;">Fixes the disease of every student team: the loudest voice wins.</p>
+      </div>
+      <div class="col card">
+        <span class="tag orange">SCAMPER</span>
+        <p style="margin-top:12px;">Substitute · Combine · Adapt · Modify · Put to other use · <b>Eliminate</b> · Reverse — applied to an existing solution.</p>
+        <p class="small muted" style="margin-top:10px;">Eliminate is the sharpest blade: what if GREEN CYCLE dropped the factory and just brokered tyres to existing recyclers first?</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 1 · Ideation</span></div>
+</section>
+
+<!-- ═══════════════ 12 · ONE PROBLEM MANY SOLUTIONS ═══════════════ -->
+<section class="slide">
+  <h2>One problem, many solutions. <span class="thin">Hold yours lightly.</span></h2>
+  <div class="content">
+    <p style="margin-bottom:16px;"><b>S T Sundar's team</b> found a sharp problem: <i>trains show WL 150 while 150+ seat-legs run empty across segments.</i> That single problem admits at least five solutions:</p>
+    <div class="pillrow">
+      <div class="pill">Waitlist-confirmation predictor</div>
+      <div class="pill">Alternate route/date recommender</div>
+      <div class="pill" style="border-color:var(--accent); background:var(--accent-soft);"><b>Algorithmic split-ticketing ← their pick</b></div>
+      <div class="pill">Dynamic quota reallocation (sell to IRCTC)</div>
+      <div class="pill">Agent tool for travel bookers</div>
+    </div>
+    <div class="cols" style="margin-top:30px;">
+      <div class="col callout green">Choosing <b>deliberately</b> among alternatives = a defensible answer to the jury's "why this approach?"</div>
+      <div class="col callout">If you can't name the alternatives you rejected, you haven't ideated; you've attached to your first idea.</div>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 1 · Ideation</span></div>
+</section>
+
+<!-- ═══════════════ 13 · SCHLEP BLINDNESS ═══════════════ -->
+<section class="slide">
+  <h2>The best ideas often look like <span class="thin">boring, painful work</span></h2>
+  <div class="content">
+    <div class="pg" style="margin-top:0;">
+      <p>"Your unconscious won't even let you see ideas that involve painful schleps… The most striking example I know is Stripe. Thousands of programmers knew how painful it was to handle payments. But they looked away."</p>
+      <p class="src">Paul Graham, <i>Schlep Blindness</i> (2012), lightly condensed</p>
+    </div>
+    <p style="margin-top:24px; font-size:24px;">Everyone in this cohort chasing a shiny consumer AI app walked past ideas like <b>Dream It</b> (pharmacy procurement) and <b>Stellaris</b> (CA firm workflows). Unglamorous problem + paying customer + no one else willing to do the schlep = the best kind of startup.</p>
+    <div class="callout" style="margin-top:22px;">Ask yourselves honestly: did we pick this idea because the problem is real, or because the demo would look cool?</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 1 · Ideation</span></div>
+</section>
+
+<!-- ═══════════════ 14 · SECTION: SCOPING ═══════════════ -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Part 2 of 5</div>
+    <h1>Scoping</h1>
+    <p>The hardest design decision is not what to build. It's what <b>not</b> to build first.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- ═══════════════ 15 · WELL NOT CRATER ═══════════════ -->
+<section class="slide">
+  <h2>Dig a well, not a crater</h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:24px;">
+      <div class="col card">
+        <span class="tag red">Crater: broad &amp; shallow</span>
+        <p style="margin-top:10px;">"Lots of people are <i>mildly</i> interested." A social app for everyone; a platform for all farmers; an assistant for every task. Nobody's life changes.</p>
+      </div>
+      <div class="col card">
+        <span class="tag green">Well: narrow &amp; deep</span>
+        <p style="margin-top:10px;">A small group needs it <b>urgently</b>. One user, one problem, one killer feature, solved end-to-end. Then the well widens: every big company started as somebody's well.</p>
+      </div>
+    </div>
+    <div class="pg" style="margin-top:0;">
+      <p>"When a startup launches, there have to be at least some users who really need what they're making — not just people who could see themselves using it one day, but who want it urgently."</p>
+      <p class="src">Paul Graham, <i>How to Get Startup Ideas</i> — and its cousin: "Better to make a few users love you than a lot ambivalent." (<i>Startups in 13 Sentences</i>)</p>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 2 · Scoping</span></div>
+</section>
+
+<!-- ═══════════════ 16 · EVERYTHING PLATFORM ═══════════════ -->
+<section class="slide">
+  <h2>The "everything platform" pattern. <span class="thin">I saw it in this room.</span></h2>
+  <div class="content">
+    <p style="margin-bottom:18px;">These are <b>bold, genuinely exciting visions</b>, and I mean that. But look at the v1 surface area:</p>
+    <table class="simple">
+      <tr><th>Team</th><th>The vision (great!)</th><th style="width:30%;">v1 surface area</th></tr>
+      <tr><td>HappyHome</td><td>Cook + cleaner + nanny + night guardian + laundry + security + utensils + doctor-on-call, one subscription</td><td>8 services × supply ops, each</td></tr>
+      <tr><td>Desi9</td><td>AI wardrobe extraction + color analysis + Pinterest matching + shopping engine + designer studio + brand drops</td><td>6 products in one app</td></tr>
+      <tr><td>BioByte</td><td>Farm-to-factory "Bio-OS": feedstock maps + IoT cold chain + bioreactor digital twins + waste yield + carbon SaaS</td><td>5 layers, 6 customer types</td></tr>
+      <tr><td>OMNI</td><td>One AI workspace that orchestrates <i>all</i> your other tools</td><td>Every integration is a product</td></tr>
+    </table>
+    <div class="callout" style="margin-top:20px;">The risk isn't ambition. It's that <b>each service or layer needs its own supply, quality bar, and trust</b>, and a 4-person team funds none of them well simultaneously. These are craters. Each contains several excellent wells.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 2 · Scoping</span></div>
+</section>
+
+<!-- ═══════════════ 17 · SEQUENCING NOT SHRINKING ═══════════════ -->
+<section class="slide">
+  <h2>The fix is sequencing, <span class="thin">not shrinking the dream</span></h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:26px;">
+      <div class="col card">
+        <span class="tag green">Amazon</span>
+        <p style="margin-top:10px;">Vision: everything store.<br><b>Wedge: books only.</b> One supplier network, one logistics problem, four years.</p>
+      </div>
+      <div class="col card">
+        <span class="tag green">Zomato</span>
+        <p style="margin-top:10px;">Vision: all of food.<br><b>Wedge: scanned menu PDFs</b> for Delhi offices. Delivery came 7 years later.</p>
+      </div>
+      <div class="col card">
+        <span class="tag green">HappyHome, sequenced</span>
+        <p style="margin-top:10px;">Vision: 8-service family OS.<br><b>Wedge: verified cook + 1-hour replacement</b> in 3 apartment complexes. Nail trust, then add services.</p>
+      </div>
+    </div>
+    <div class="callout green">Pitch the vision. <b>Build the wedge.</b> Juries fund teams who know the difference: "Phase 1 is X; here's the evidence; phases 2–4 are the roadmap."</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 2 · Scoping</span></div>
+</section>
+
+<!-- ═══════════════ 18 · SCOPING DONE WELL ═══════════════ -->
+<section class="slide">
+  <h2>Sharp scoping, done well in this cohort</h2>
+  <div class="content">
+    <table class="simple">
+      <tr><th>Team</th><th>The scoping move</th><th style="width:34%;">What they said <span style="color:var(--red);">no</span> to</th></tr>
+      <tr><td>Stellaris (Veritas)</td><td>"We do <b>not</b> replace Tally/Zoho; we orchestrate the workflow <i>around</i> them"</td><td>Rebuilding accounting software</td></tr>
+      <tr><td>Aven</td><td>One deliverable: an evidence-backed <b>Issues List</b>. "No evidence means no finding."</td><td>Deciding the deal; generic AI analyst</td></tr>
+      <tr><td>NeuroNest</td><td>"A <b>screening and referral aid, not a diagnostic tool</b>", for parents of children 2–8, Tier-2/3</td><td>Playing doctor; regulatory quicksand</td></tr>
+      <tr><td>SRMPay</td><td>Campus-only: verified SRM students + campus vendors</td><td>Competing with UPI for everyone</td></tr>
+    </table>
+    <div class="callout blue" style="margin-top:22px;">Notice: every strong scope is defined by an explicit <b>"we don't do X"</b>. Write yours down. It's the most clarifying sentence in your deck.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 2 · Scoping</span></div>
+</section>
+
+<!-- ═══════════════ 19 · 60-SEC THINK ═══════════════ -->
+<section class="slide">
+  <div class="content">
+    <div class="kicker">60-second think: no discussion, just write</div>
+    <div class="bigquote">What is the <span class="accent">smallest slice</span> of your solution that still <span class="accent">completely solves</span> the core problem for one specific user?</div>
+    <p class="attrib" style="margin-top:30px;">Keep this sentence. You'll use it in the worksheet at the end, and your Day 2 mentor will ask for it.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 2 · Scoping</span></div>
+</section>
+
+<!-- ═══════════════ 20 · SECTION: FIT & REALITY ═══════════════ -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Part 3 of 5</div>
+    <h1>Fit &amp;<br>Reality Checks</h1>
+    <p>Does your solution actually talk to the customer's pain? And can you build it, and is it worth it?</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- ═══════════════ 21 · VPC STRUCTURE ═══════════════ -->
+<section class="slide">
+  <h2>Value Proposition Canvas: two sides that must fit</h2>
+  <div class="content">
+    <div class="vpc">
+      <div class="half map">
+        <h3>Value Map <span class="muted small">(your solution)</span></h3>
+        <div class="row"><span class="lbl">Products &amp; services</span><p>What you actually offer</p></div>
+        <div class="row"><span class="lbl">Pain relievers</span><p>How each feature kills a specific customer pain</p></div>
+        <div class="row"><span class="lbl">Gain creators</span><p>How you produce outcomes they want</p></div>
+      </div>
+      <div class="fitarrow">⇄<br><span style="font-size:16px; letter-spacing:.08em;">FIT</span></div>
+      <div class="half profile">
+        <h3>Customer Profile <span class="muted small">(their life)</span></h3>
+        <div class="row"><span class="lbl">Jobs to be done</span><p>What they're trying to accomplish: functional, social, emotional</p></div>
+        <div class="row"><span class="lbl">Pains</span><p>What blocks, annoys, or risks them today</p></div>
+        <div class="row"><span class="lbl">Gains</span><p>Outcomes they'd love, expected or unexpected</p></div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:24px;">Fill the <b>right side first, from your Session-2 interview evidence</b>, never from imagination. Then the fit test: every feature on the left must point at a top-3 pain on the right. A feature that maps to no pain isn't a bonus; it's cost, delay, and dilution. Cut it.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 3 · Fit &amp; Reality Checks</span></div>
+</section>
+
+<!-- ═══════════════ 22 · VPC WORKED EXAMPLE ═══════════════ -->
+<section class="slide">
+  <h2>Worked example: <span class="indigo">Astra</span> <span class="thin">(voice-first agri platform)</span></h2>
+  <div class="content">
+    <div class="vpc">
+      <div class="half map">
+        <h3>Value Map</h3>
+        <div class="row"><span class="lbl">Product</span><p>Voice-first AI marketplace in Telugu: sell produce, buy inputs, book logistics</p></div>
+        <div class="row"><span class="lbl">Pain relievers</span><p>Voice UI → literacy barrier gone · Direct buyers → middleman margin recovered · One number to call → no app maze</p></div>
+        <div class="row"><span class="lbl">Gain creators</span><p>Price transparency before selling · Trusted, repeatable channel</p></div>
+      </div>
+      <div class="fitarrow">⇄</div>
+      <div class="half profile">
+        <h3>Customer: small farmer, low digital literacy</h3>
+        <div class="row"><span class="lbl">Jobs</span><p>Sell harvest at a fair price · get quality inputs on time · feel in control, not dependent</p></div>
+        <div class="row"><span class="lbl">Pains</span><p>Middlemen take the margin · can't read app-first platforms · no price visibility · unreliable access to services</p></div>
+        <div class="row"><span class="lbl">Gains</span><p>More income per harvest · dignity of dealing direct · advice in own language</p></div>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:18px;">Every left-side item points at a named right-side pain. That's fit on paper. Now compress it into one breath: <i>"For [customer] who [pain], [product] is a [category] that [benefit]. Unlike [today's alternative], we [difference]."</i> You'll write yours in the activity.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 3 · Fit &amp; Reality Checks</span></div>
+</section>
+
+<!-- ═══════════════ 23 · FEASIBILITY ═══════════════ -->
+<section class="slide">
+  <h2>Feasibility: the questions a jury will actually ask</h2>
+  <div class="content">
+    <p style="margin-bottom:14px;">Desirability you validated yesterday. Two more lenses remain: <b>can you build and run it</b> (feasibility), and <b>does it sustain itself</b> (viability — Session 4's job). The jury's feasibility questions, mapped to this room:</p>
+    <table class="simple">
+      <tr><th style="width:20%;">Dimension</th><th>The honest question</th><th style="width:36%;">In this room</th></tr>
+      <tr><td>Technical</td><td>What must be true physically or algorithmically, and what does your <b>data</b> show so far?</td><td>BHHARRAT: what efficiency does the electrolyser hit <i>today</i> vs. the claim? Trientra: has aeroponic saffron flowered anywhere at your target cost?</td></tr>
+      <tr><td>Adoption</td><td>Does the solution require <b>many parties to change behavior at once</b>?</td><td>Med Rakshaks: blockchain verification works only if manufacturers, distributors <i>and</i> pharmacies all onboard</td></tr>
+      <tr><td>Operational</td><td>Can a student team actually run this supply/service?</td><td>HappyHome's 1-hour replacement guarantee = a standby workforce. Costed?</td></tr>
+      <tr><td>Regulatory</td><td>Whose permission do you need?</td><td>SRMPay: deferred payments brush against RBI lending rules. NeuroNest handled this <i>well</i> by scoping to screening.</td></tr>
+    </table>
+    <p class="muted small" style="margin-top:14px;">"Feasible" doesn't mean solved. It means you can name the hard part and show a credible path, or a de-risking experiment.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 3 · Fit &amp; Reality Checks</span></div>
+</section>
+
+<!-- ═══════════════ 24 · OPPORTUNITY EVALUATION ═══════════════ -->
+<section class="slide">
+  <h2>Opportunity evaluation: is it worth it, and why now?</h2>
+  <div class="content">
+    <div class="cols">
+      <div class="col">
+        <div class="card" style="margin-bottom:18px;">
+          <span class="tag green">Bottom-up market math: Stellaris did this right</span>
+          <p class="small" style="margin-top:10px;">1.51 lakh CAs in full-time practice × ₹5,000/month for even 1 lakh firms = <b>₹5,800+ crore/year</b>. Built from real units, not "1% of a $50B market".</p>
+        </div>
+        <div class="card">
+          <span class="tag green">"Why now": ELYON has a real one</span>
+          <p class="small" style="margin-top:10px;">Harvest-now-decrypt-later attacks + NIST FIPS 203/204 deadlines = a forcing function. Timing is an argument, not a vibe.</p>
+        </div>
+      </div>
+      <div class="col card">
+        <h3 style="margin-bottom:12px;">Score your opportunity (1–5 each)</h3>
+        <ul class="tight" style="list-style:none;">
+          <li>① Problem severity: painkiller or vitamin?</li>
+          <li>② Market size: <b>bottom-up</b>, reachable segment</li>
+          <li>③ Why now: what changed recently?</li>
+          <li>④ Ability to win: skills, access, unfair advantage</li>
+          <li>⑤ First customer: can you reach 10 of them <b>this month</b>?</li>
+        </ul>
+        <p class="small muted" style="margin-top:12px;">Under 15/25? The idea isn't dead, but pick your wedge again. ⑤ is where campus ideas like SRMPay quietly score 5/5.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 3 · Fit &amp; Reality Checks</span></div>
+</section>
+
+<!-- ═══════════════ 25 · SECTION: MVP ═══════════════ -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Part 4 of 5</div>
+    <h1>MVP &amp; Prototype</h1>
+    <p>The cheapest honest experiment that tells you whether to keep going. This is the practical heart of the session, and where I'll tell you two stories.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- ═══════════════ 26 · MVP REDEFINED ═══════════════ -->
+<section class="slide">
+  <h2>An MVP is not a smaller product. <span class="thin">It's an experiment.</span></h2>
+  <div class="content">
+    <div class="cols">
+      <div class="col card">
+        <span class="tag red">What students usually build</span>
+        <ul class="checklist crosslist" style="margin-top:14px;">
+          <li>A thinner version of the full app</li>
+          <li>3 months of coding before the first user</li>
+          <li>Tests nothing except "can we code"</li>
+          <li>Success = "it works on my laptop"</li>
+        </ul>
+      </div>
+      <div class="col card">
+        <span class="tag green">What an MVP actually is</span>
+        <ul class="checklist" style="margin-top:14px;">
+          <li>The fastest test of your <b>riskiest assumption</b></li>
+          <li>Real users, real stakes, this month</li>
+          <li>Often involves <b>no code at all</b></li>
+          <li>Success = a decision: persevere, pivot, or kill</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:26px;"><b>Build → Measure → Learn.</b> The loop's speed matters more than the polish of any single lap. The Colour Genie loop again, just with users in it.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 27 · DONT SCALE ═══════════════ -->
+<section class="slide">
+  <h2>Do things that don't scale</h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:22px;">
+      <div class="col card">
+        <span class="tag blue">Airbnb, 2009</span>
+        <p style="margin-top:10px;">Founders flew to New York, went <b>door to door</b> photographing hosts' apartments themselves. Bookings doubled. No platform feature did that.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">Stripe, 2010</span>
+        <p style="margin-top:10px;">The "Collison installation": when anyone said they'd try Stripe, the founders said <i>"give me your laptop"</i> and set it up <b>on the spot</b>.</p>
+      </div>
+    </div>
+    <div class="pg" style="margin-top:0;">
+      <p>"Startups take off because the founders make them take off… The most common unscalable thing founders have to do at the start is to recruit users manually. Nearly all startups have to."</p>
+      <p class="src">Paul Graham, <i>Do Things That Don't Scale</i> (2013) — the single most useful essay for the next 30 days of your venture</p>
+    </div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 28 · RISKIEST ASSUMPTION ═══════════════ -->
+<section class="slide">
+  <h2>Start from your riskiest assumption</h2>
+  <div class="content">
+    <p style="margin-bottom:16px;">Template: <b>"We believe [X]. If we're wrong about this, nothing else matters."</b> Usually it's about behavior or money, rarely about technology.</p>
+    <table class="simple">
+      <tr><th>Team</th><th>Likely riskiest assumption</th></tr>
+      <tr><td>Dream It</td><td>Small pharmacies will <b>switch suppliers and pay a subscription</b>, not just say procurement is painful</td></tr>
+      <tr><td>Genesis (Journi)</td><td>Travelers will <b>trust and follow</b> an AI itinerary enough to change bookings</td></tr>
+      <tr><td>OpenBin</td><td>Households will <b>consistently segregate and schedule pickups</b> for modest rewards</td></tr>
+      <tr><td>Pet Orbit</td><td>Existing pet centers will <b>accept standards + commission</b> for demand they don't have today</td></tr>
+      <tr><td>DocSathi</td><td>Users stuck on government forms will trust an app over the <b>local middleman who "knows a guy"</b></td></tr>
+    </table>
+    <div class="callout blue" style="margin-top:18px;">Notice: none of these are "can we build the AI/app/blockchain". Test the behavior first; the tech risk is usually the one you control.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 29 · MVP LADDER ═══════════════ -->
+<section class="slide">
+  <h2>The MVP ladder: <span class="thin">climb only as high as the assumption requires</span></h2>
+  <div class="content">
+    <div class="ladder" style="margin-bottom:26px;">
+      <div class="rung" style="min-height:150px;">
+        <h4>Landing page / smoke test</h4>
+        <p>Describe the offer, count signups or pre-orders</p>
+        <span class="cost">days · ₹0</span>
+      </div>
+      <div class="rung" style="min-height:185px;">
+        <h4>Concierge</h4>
+        <p>Deliver the service <b>manually</b> to a few customers (Zappos: photographed shoes from local stores)</p>
+        <span class="cost">1–2 weeks · ₹0–5k</span>
+      </div>
+      <div class="rung" style="min-height:220px;">
+        <h4>Wizard of Oz</h4>
+        <p>Looks automated outside; humans behind the curtain. Test the promise before the tech</p>
+        <span class="cost">2–4 weeks</span>
+      </div>
+      <div class="rung" style="min-height:255px;">
+        <h4>Single-feature product</h4>
+        <p>The killer feature only, for the wedge segment (Dropbox started with a demo <i>video</i>)</p>
+        <span class="cost">4–8 weeks</span>
+      </div>
+      <div class="rung" style="min-height:290px;">
+        <h4>Pilot</h4>
+        <p>One real institution / locality / crop season, with success criteria agreed upfront</p>
+        <span class="cost">a quarter</span>
+      </div>
+    </div>
+    <p class="muted">Airbnb's first version: air mattresses in the founders' own flat during a conference. The assumption (<i>strangers will pay to stay in a stranger's home</i>) needed zero platform.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 30 · STORY: MONEYBALL ═══════════════ -->
+<section class="slide">
+  <h2><span class="kicker" style="display:block;">Story time · I was at Yahoo when this happened</span>Project Moneyball: a real platform in 43 days</h2>
+  <div class="content">
+    <div class="statrow" style="margin-bottom:26px;">
+      <div class="stat"><div class="n">18</div><div class="l">people, pulled into one skunkworks team</div></div>
+      <div class="stat"><div class="n orange">43</div><div class="l">days from kickoff to a live native-ads platform (Gemini)</div></div>
+      <div class="stat"><div class="n">$300M</div><div class="l">revenue in its first year, 2014</div></div>
+    </div>
+    <ul class="checklist">
+      <li><b>Small team, total focus</b>: 18 people who did nothing else for six weeks</li>
+      <li><b>A real deadline</b>: launch was announced before the build finished</li>
+      <li><b>Ruthless scope</b>: v1 did one thing — native ads on Yahoo's own streams. Everything else waited</li>
+    </ul>
+    <p class="muted small" style="margin-top:18px;">"Project Moneyball: An Oral History", Fast Company, 2015. A billion-dollar company moving at hackathon speed, because the scope was a well, not a crater. If Yahoo could do it with 18 people, you can do your v1 with 4.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 31 · STORY: 3D MODELER ═══════════════ -->
+<section class="slide">
+  <h2><span class="kicker" style="display:block;">Story time · my college project, twice</span>Months in 1994. Hours in 2026.</h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:24px;">
+      <div class="col card">
+        <span class="tag blue">Then: GCT Coimbatore, the 90s</span>
+        <p style="margin-top:10px;">I built a <b>3D modeling platform from scratch</b>, using principles straight out of our Engineering Drawing class: projections, transformations, hidden-line removal. Months of work. It went on to win prizes at national-level contests.</p>
+      </div>
+      <div class="col card">
+        <span class="tag orange">Now: one recent evening</span>
+        <p style="margin-top:10px;">I re-created it with <b>Claude Code in a few hours</b>. Same math, same principles; the AI wrote the scaffolding, I steered with what I knew. The joy was identical. The timeline was not.</p>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:0; font-size:24px;">The months-of-work moat is gone; anyone can build now. What the AI could <b>not</b> do: know what was worth building, or whether it was right. <b>Your moat is problem insight + validation, not code.</b></div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 32 · WEEKEND STACK ═══════════════ -->
+<section class="slide">
+  <h2>How I'd build your MVP this weekend</h2>
+  <div class="content">
+    <p style="margin-bottom:16px;"><span class="tag orange">Fair warning</span> &nbsp;I'm a software guy, so this slide is biased. Hardware teams: yours is next.</p>
+    <table class="simple">
+      <tr><th style="width:26%;">Need</th><th>2026 answer</th><th style="width:30%;">Cost</th></tr>
+      <tr><td>Write the code</td><td>Claude Code / Cursor as your pair programmer; you steer, it types</td><td>free tiers exist</td></tr>
+      <tr><td>UI in an afternoon</td><td>v0.dev, Figma Make, or plain HTML the AI writes</td><td>₹0</td></tr>
+      <tr><td>Backend + database</td><td>Supabase or Firebase; don't write your own auth, ever</td><td>₹0 at your scale</td></tr>
+      <tr><td>Put it online</td><td>Vercel / Netlify, live URL in minutes</td><td>₹0</td></tr>
+      <tr><td>Reach users (India)</td><td>A WhatsApp number beats an app store launch for v1. DocSathi: landing page + WhatsApp + <i>you</i> filling the forms behind the curtain = a complete Wizard-of-Oz MVP</td><td>₹0</td></tr>
+    </table>
+    <div class="callout" style="margin-top:18px;">The catch: when everyone can build in a weekend, <b>shipped ≠ validated</b>. The tools above buy you speed to the <i>experiment</i>, not the answer.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 33 · MVPS NEXT WEEK ═══════════════ -->
+<section class="slide">
+  <h2>MVPs this room could run <span class="accent">next week</span> <span class="thin">(&lt; ₹5,000)</span></h2>
+  <div class="content">
+    <table class="simple">
+      <tr><th>Team</th><th>The two-week test</th><th style="width:30%;">It proves / kills</th></tr>
+      <tr><td>DocSathi</td><td>Manually walk 20 students through <b>one</b> document (say, passport) over WhatsApp</td><td>Will people trust &amp; pay vs. the agent?</td></tr>
+      <tr><td>HappyHome</td><td>Concierge cook service for 5 families in one complex, phone-only, keep a replacement on standby</td><td>Reliability promise; willingness to pay ₹5,999</td></tr>
+      <tr><td>Genesis</td><td>Hand-craft 10 itineraries for real travelers; track how many are actually followed</td><td>Do people act on the plan?</td></tr>
+      <tr><td>Aven</td><td>Run AI-assisted diligence on 2 <i>closed</i> deals; compare findings &amp; hours vs. what the team found manually</td><td>Time saved + missed red flags = the pitch</td></tr>
+      <tr><td>Crop Pilots</td><td>WhatsApp advisory for 20 chilli farmers for one fortnight, humans + AI behind the scenes</td><td>Engagement; which advice they act on</td></tr>
+      <tr><td>EventEz</td><td>Plan 3 real events end-to-end with a Google Form + curated vendor sheet</td><td>Where planning pain actually bites</td></tr>
+    </table>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 34 · HARDWARE PATH ═══════════════ -->
+<section class="slide">
+  <h2>Hardware &amp; deep tech: <span class="thin">Cauframe, AquaRescue, Ayush Plus, BHHARRAT, GREEN CYCLE</span></h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:24px;">
+      <div class="col card">
+        <span class="tag blue">"Works-like" prototype</span>
+        <p class="small" style="margin-top:10px;">Proves the physics/function, can be ugly. AquaRescue: muddy-water field test + a <b>certified lab report</b>. That report is a pitch slide.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">"Looks-like" prototype</span>
+        <p class="small" style="margin-top:10px;">Proves desirability &amp; wearability. Cauframe: 3D-printed frames on 30 real commuters for a week, collecting comfort &amp; style feedback.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">Demand proof, in parallel</span>
+        <p class="small" style="margin-top:10px;">Pre-orders, deposits, LOIs. GREEN CYCLE: signed letters from 5 tyre shops beat a factory blueprint.</p>
+      </div>
+    </div>
+    <div class="callout">Deep tech ventures (BHHARRAT): your MVP is a <b>measured data point</b> (efficiency, cost-per-kg, cycle life) plus one credible pilot partner. Investors fund curves, not adjectives.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 35 · MEASURE ═══════════════ -->
+<section class="slide">
+  <h2>Decide the pass mark <span class="thin">before</span> you run the test</h2>
+  <div class="content">
+    <div class="card" style="padding:26px 30px; margin-bottom:24px;">
+      <p style="font-size:25px; line-height:1.55;">"We will run <b class="indigo">[test]</b> with <b class="indigo">[n]</b> real <b class="indigo">[users]</b> for <b class="indigo">[period]</b>.<br>
+      We succeed if <b class="accent">[metric ≥ threshold]</b>. If not, we <b>[pivot / re-scope / kill]</b>."</p>
+    </div>
+    <div class="cols">
+      <div class="col callout green"><b>Good metrics:</b> paid anything at all · came back unprompted · completed the job end-to-end · referred someone · signed an LOI</div>
+      <div class="col callout"><b>Vanity metrics:</b> "liked the idea" · registrations with no usage · social followers · relatives' enthusiasm</div>
+    </div>
+    <p class="muted" style="margin-top:22px;">Committing to the threshold in advance is what makes it an experiment instead of a story you'll retro-fit. Write it down where your team can't un-see it.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 4 · MVP &amp; Prototype</span></div>
+</section>
+
+<!-- ═══════════════ 36 · SECTION: BUILD TOGETHER ═══════════════ -->
+<section class="slide section-slide">
+  <div class="content">
+    <div class="kicker">Part 5 of 5</div>
+    <h1>Build Together</h1>
+    <p>Software development is not just coding, and a startup is not just a product. More early ventures die of team friction than of competition. Communication is infrastructure; build it like you build the product.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+<!-- ═══════════════ 37 · TEAM COMMUNICATION ═══════════════ -->
+<section class="slide">
+  <h2>Building as a team: <span class="thin">three habits that do the work</span></h2>
+  <div class="content">
+    <div class="cols" style="margin-bottom:22px;">
+      <div class="col card">
+        <span class="tag blue">Owners, not committees</span>
+        <p style="margin-top:10px;">Split the venture into areas (product, tech, users/market) and give each <b>one owner</b>. Everyone gets input; one person decides. Consensus on everything is how student teams ship nothing.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">The 15-minute daily sync</span>
+        <p style="margin-top:10px;">Each person, three sentences: what I did, what's next, what's blocking me. Same time daily, standing up. Blockers surface in hours instead of festering for weeks.</p>
+      </div>
+      <div class="col card">
+        <span class="tag blue">Demo, don't describe</span>
+        <p style="margin-top:10px;">Weekly, show each other <b>working things</b>: a screen, a prototype, an interview recording. Progress is measured in demos, not promises. Moneyball's war room ran on this.</p>
+      </div>
+    </div>
+    <div class="callout">The conflict rule: attack ideas, never people. Diverging? Defer judgment. Converging? Be ruthless. Teams that separate the two modes argue productively; teams that mix them just argue.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 5 · Build Together</span></div>
+</section>
+
+<!-- ═══════════════ 38 · DOCUMENTATION ═══════════════ -->
+<section class="slide">
+  <h2>Write things down <span class="thin">(memory is a liar)</span></h2>
+  <div class="content">
+    <p style="margin-bottom:16px;">Teams that document <b>compound</b>; teams that don't repeat the same arguments monthly. The minimum viable documentation for a student venture — one shared folder, four living documents:</p>
+    <table class="simple">
+      <tr><th style="width:24%;">Document</th><th>What goes in it</th><th style="width:33%;">Who it saves you with</th></tr>
+      <tr><td>README</td><td>What this is, how to run it, current status. One page, always current</td><td>New teammates, hackathon judges, your own future self</td></tr>
+      <tr><td>Decision log</td><td>One line per decision: what we chose, <b>what we rejected, and why</b></td><td>The jury's "why this approach?" is pre-answered here</td></tr>
+      <tr><td>Interview notes</td><td>Verbatim customer quotes, dated and tagged by pain</td><td>Your evidence slide writes itself; mentors trust quotes over claims</td></tr>
+      <tr><td>Demo runbook</td><td>Exact steps to run the demo, without the one person who built it</td><td>Day 3, when that person's laptop dies at 9 am</td></tr>
+    </table>
+    <div class="callout" style="margin-top:18px;">New in 2026: your docs have a second reader. AI coding tools work dramatically better on a documented project — a good README briefs your <b>AI teammate</b> too. Documentation used to be a chore; now it's leverage.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Part 5 · Build Together</span></div>
+</section>
+
+<!-- ═══════════════ 39 · ACTIVITY ═══════════════ -->
+<section class="slide">
+  <h2><span class="accent">Your turn:</span> 12 minutes, one sheet per team</h2>
+  <div class="content">
+    <ol class="numlist">
+      <li><b>Riskiest assumption:</b> "We believe ______. If we're wrong, nothing else matters." <span class="muted small">(2 min)</span></li>
+      <li><b>Two-week MVP:</b> a test with real users, under ₹5,000, with a pre-committed pass mark: "We succeed if ______." <span class="muted small">(5 min)</span></li>
+      <li><b>Value proposition in one breath:</b> For [customer] who [pain], [product] is a [category] that [benefit]. Unlike [today's alternative], we [difference]. <span class="muted small">(3 min)</span></li>
+    </ol>
+    <div class="callout blue" style="margin-top:24px;">Then swap sheets with the nearest team for 2 minutes: circle anything vague, star anything sharp. <b>Bring this sheet to your Day 2 one-to-one.</b> It's the first thing your mentor will ask about.</div>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Activity</span></div>
+</section>
+
+<!-- ═══════════════ 40 · RECAP ═══════════════ -->
+<section class="slide">
+  <h2>The whole session on one slide</h2>
+  <div class="content">
+    <div class="steps" style="margin-bottom:36px;">
+      <div class="step done">Validated problem</div>
+      <div class="step done">HMW + ideate wide</div>
+      <div class="step done">Scope a well</div>
+      <div class="step done">VPC fit</div>
+      <div class="step done">Feasibility check</div>
+      <div class="step here">MVP → evidence</div>
+    </div>
+    <ul class="checklist">
+      <li>Your solution is one of many: <b>name the alternatives you rejected</b> (mind map, Crazy 8s, brainwriting)</li>
+      <li>Pitch the vision, <b>build the well</b>: one user, one problem, one killer feature</li>
+      <li>Every feature must point at an <b>interview-evidenced pain</b>; cut the rest</li>
+      <li>An MVP is an <b>experiment with a pre-committed pass mark</b>, often with no code</li>
+      <li>Do things that don't scale; recruit your first users <b>by hand</b></li>
+      <li>One owner per area · daily 15-min sync · demo weekly · <b>write decisions and interviews down</b></li>
+    </ul>
+    <p class="muted small" style="margin-top:20px;">Homework, 40 minutes total: Paul Graham's <i>How to Get Startup Ideas</i>, <i>Do Things That Don't Scale</i>, <i>Schlep Blindness</i> — all free at paulgraham.com. Day 3's jury scores exactly what we practiced: Solution ties to problem, Value proposition is clear, Evidence exists.</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Recap</span></div>
+</section>
+
+<!-- ═══════════════ 41 · CLOSE ═══════════════ -->
+<section class="slide">
+  <div class="content">
+    <div class="bigquote">"Make something<br>people <span class="accent">want</span>."</div>
+    <p class="attrib">— Paul Graham. It's the whole game in four words.</p>
+    <div class="titlebar"></div>
+    <p style="font-size:25px; max-width:1000px;">I've been chasing the same joy since 32 KB of RAM and a cassette drive. It has never been cheaper to feel it than right now. <b>This weekend, go build the smallest thing that could prove somebody wants it.</b> HP started in a garage; Facebook in a dorm room. <span class="accent"><b>What is your garage?</b></span></p>
+    <p style="margin-top:24px; font-size:22px;"><b>Thank you.</b> <span class="muted">Questions now, or grab me during the breaks. I'm mentoring here all three days.</span></p>
+    <p class="muted small" style="margin-top:12px;">Raj Madhuram · linkedin.com/in/rmadhuram · PRARAMBH Deep Dive Workshop · SRM University AP · 28 August 2026</p>
+  </div>
+  <div class="foot"><span>PRARAMBH 2026</span><span>Problem → Solution</span></div>
+</section>
+
+</div>
+</div>
+
+<div id="pagenum"></div>
+<div id="progress"></div>
+<div id="help">← → navigate · Home/End · print = PDF export</div>
+
+<script>
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const pagenum = document.getElementById('pagenum');
+  const progress = document.getElementById('progress');
+  const stage = document.getElementById('stage');
+  let i = 0;
+
+  function clamp(n) { return Math.max(0, Math.min(slides.length - 1, n)); }
+  function show(n) {
+    i = clamp(n);
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    pagenum.textContent = (i + 1) + ' / ' + slides.length;
+    progress.style.transform = 'scaleX(' + ((i + 1) / slides.length) + ')';
+    location.hash = '#' + (i + 1);
+  }
+  function fit() {
+    const s = Math.min(innerWidth / 1300, innerHeight / 740);
+    stage.style.transform = 'scale(' + s + ')';
+  }
+  addEventListener('resize', fit);
+  addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+  });
+  addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    show(e.clientX > innerWidth / 2 ? i + 1 : i - 1);
+  });
+  const fromHash = parseInt(location.hash.slice(1), 10);
+  fit();
+  show(isNaN(fromHash) ? 0 : fromHash - 1);
+})();
+</script>
+</body>
+</html>

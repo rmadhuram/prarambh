@@ -1,0 +1,270 @@
+<title>Trinetra Deep Dive</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --paper: #fbfaf7;
+    --ink: #1c2333;
+    --ink-soft: #4a5268;
+    --accent: #e8720c;
+    --accent-soft: #fdeedd;
+    --indigo: #2b3a8c;
+    --indigo-chip: #e6e9f7;
+    --indigo-chip-ink: #2b3a8c;
+    --card: #ffffff;
+    --line: #e2ddd2;
+    --line-strong: #c9c5ba;
+    --warn-bg: #fbe9e4;
+    --warn-ink: #a13c1c;
+    --note-bg: #f1efe8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161f;
+      --ink: #eceef5;
+      --ink-soft: #a0a8bf;
+      --accent: #f68a2e;
+      --accent-soft: #33261a;
+      --indigo: #93a1e8;
+      --indigo-chip: #232a45;
+      --indigo-chip-ink: #aab5ef;
+      --card: #1c1f2c;
+      --line: #2b2f40;
+      --line-strong: #3a3f55;
+      --warn-bg: #3a221c;
+      --warn-ink: #f0a58a;
+      --note-bg: #20232f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161f;
+    --ink: #eceef5;
+    --ink-soft: #a0a8bf;
+    --accent: #f68a2e;
+    --accent-soft: #33261a;
+    --indigo: #93a1e8;
+    --indigo-chip: #232a45;
+    --indigo-chip-ink: #aab5ef;
+    --card: #1c1f2c;
+    --line: #2b2f40;
+    --line-strong: #3a3f55;
+    --warn-bg: #3a221c;
+    --warn-ink: #f0a58a;
+    --note-bg: #20232f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    padding: 0 24px 72px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+
+  a { color: var(--indigo); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .backlink { font-size: 13px; font-weight: 600; text-decoration: none; }
+
+  header { padding: 44px 0 24px; border-bottom: 3px solid var(--ink); }
+  .kicker {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 18px;
+  }
+  h1 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: clamp(36px, 6vw, 54px);
+    font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.02; margin-top: 6px;
+  }
+  .sub { margin-top: 8px; font-size: 16px; color: var(--ink-soft); }
+  .metarow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .chip {
+    font-size: 12px; font-weight: 700; letter-spacing: .03em;
+    padding: 3px 10px; border-radius: 999px;
+    background: var(--indigo-chip); color: var(--indigo-chip-ink);
+  }
+  .chip.note { background: var(--note-bg); color: var(--ink-soft); }
+
+  section { margin-top: 38px; }
+  h2 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 22px; font-weight: 800; letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  h2 .no { color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  section > p { margin-top: 10px; max-width: 68ch; }
+  .why { margin-top: 10px; font-size: 14px; color: var(--ink-soft); max-width: 68ch; }
+  .why b { color: var(--ink); font-weight: 600; }
+
+  .submitted {
+    margin-top: 14px; display: grid; gap: 10px;
+  }
+  .submitted .row {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; font-size: 14px;
+  }
+  .submitted .lbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 3px;
+  }
+
+  ul.q { margin-top: 12px; list-style: none; display: grid; gap: 8px; }
+  ul.q li {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 11px 15px; font-size: 14.5px;
+  }
+  ul.q li b { font-weight: 600; }
+
+  .killshot {
+    margin-top: 44px;
+    background: var(--accent-soft); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 22px 26px;
+  }
+  .killshot .lbl {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .killshot p {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 21px; font-weight: 700; letter-spacing: -0.01em;
+    margin-top: 8px; line-height: 1.3; text-wrap: balance;
+  }
+  .killshot .after { font-family: inherit; font-size: 14px; font-weight: 400; color: var(--ink-soft); margin-top: 10px; }
+
+  .facts {
+    margin-top: 14px;
+    background: var(--note-bg); border: 1px solid var(--line-strong); border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .facts ul { margin: 6px 0 0 18px; font-size: 14px; display: grid; gap: 6px; }
+  .facts .cv { font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+
+  footer {
+    margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line-strong);
+    font-size: 12.5px; color: var(--ink-soft);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+
+<div class="wrap">
+
+<header>
+  <a class="backlink" href="https://claude.ai/code/artifact/8d37fe34-032c-4584-ba63-de6354566045">← The PRARAMBH Cohort</a>
+  <div class="kicker">Team Deep Dive · AgriTech</div>
+  <h1>Trinetra</h1>
+  <p class="sub">Aeroponic saffron cultivation — growing saffron indoors, anywhere in India, free of Kashmir's geography and climate.</p>
+  <div class="metarow">
+    <span class="chip">Mentor: Mr. Vijay</span>
+    <span class="chip">Trientra entry: Mr. Srinath</span>
+    <span class="chip note">No software</span>
+    <span class="chip note">Registered twice (Trinetra / Trientra)</span>
+  </div>
+</header>
+
+<section>
+  <h2>What they submitted</h2>
+  <div class="submitted">
+    <div class="row"><div class="lbl">Problem</div>How can we make saffron cultivation controlled, sustainable and scalable — without letting geography and climate decide where and how much saffron India can produce?</div>
+    <div class="row"><div class="lbl">Target customers</div>"Saffron based industry, middle class customer etc" (Trinetra) · pharma and perfume industries, premium food, beauty and skin, restaurants and hotels, gift buyers, export customers (Trientra)</div>
+    <div class="row"><div class="lbl">Solution</div>Aeroponic farming: a soil-less method where roots are suspended in air and periodically misted with a nutrient-rich solution.</div>
+  </div>
+  <p class="why"><b>Read:</b> the solution as written is a definition of a technique, not a venture. The grilling below is designed to force the jump from "aeroponics exists" to "we have a business growing and selling saffron." The two entries also give two different customer answers — resolve that first.</p>
+</section>
+
+<section>
+  <h2><span class="no">1</span>Problem validation</h2>
+  <p class="why">Is anyone actually paying to solve this? "Industry" and "middle class customer" are two different companies.</p>
+  <ul class="q">
+    <li>Who exactly suffers because saffron supply is geography-bound? Name one buyer you have spoken to.</li>
+    <li>B2B ingredient supply to pharma/perfume and retail consumer packets are completely different businesses. <b>Which one are you?</b></li>
+    <li>India imports most of its saffron, and Iranian saffron is far cheaper than Kashmiri. Is the problem <b>availability, price, authenticity, or provenance</b>? Each implies a different product.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">2</span>Agronomic &amp; technical feasibility</h2>
+  <p class="why">The hardest grilling zone. Saffron is one of the most demanding crops to move indoors.</p>
+  <ul class="q">
+    <li>Have you grown a single saffron flower yet — anywhere, even in a tray?</li>
+    <li>Saffron flowers <b>once a year</b> from a corm and needs a cold vernalization period. How do you get more than one harvest cycle indoors? What is your temperature and light protocol, and where did it come from?</li>
+    <li>Where do the corms come from? Corm supply (Kashmir, Iran, Netherlands) is itself a bottleneck and a cost, and corms multiply slowly. What is your multiplication plan?</li>
+    <li>Yield math: grams of dried saffron per square metre per cycle, realistically. Say a number and defend it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">3</span>Unit economics</h2>
+  <p class="why">Controlled-environment agriculture's graveyard. Indoor farms die on electricity bills; saffron's price per gram is the only reason this might work.</p>
+  <ul class="q">
+    <li>Capex per square metre: racks, misting, HVAC, lighting. What does one grow room cost to build?</li>
+    <li>Power cost per gram of saffron produced. Does the math actually close?</li>
+    <li>At what selling price per gram do you break even — and how does that compare to Kashmiri retail and Iranian wholesale prices?</li>
+    <li>What is the payback period on one growing unit?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">4</span>Market &amp; competition</h2>
+  <ul class="q">
+    <li>Kashmiri saffron has a GI tag and a story. Lab-grown saffron has neither. Why does a pharma buyer or a premium consumer choose yours?</li>
+    <li>Indoor saffron is already being attempted in India by multiple startups and hobbyist units. What do you know that they don't?</li>
+    <li>Adulteration is rampant in saffron. Is <b>authenticity and grading</b> (ISO 3632 testing, provenance) actually the bigger opportunity than growing?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">5</span>Scoping &amp; MVP</h2>
+  <p class="why">Their claim is "controlled, sustainable and scalable." The riskiest assumption is agronomic, and testing it takes a full growing cycle — months. So what can they learn cheaply, now?</p>
+  <ul class="q">
+    <li>What is the smallest version that tests the riskiest assumption? (Likely: one small grow room, one corm batch, one harvest, one paying buyer.)</li>
+    <li>What can you learn in <b>two weeks</b>? For example: pre-sell to a pharma or perfume buyer at your target price, or run the full cost model against published indoor-yield data.</li>
+    <li>Corm to harvest is 6–8 months. What do you do for revenue and learning during the wait?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">6</span>Team &amp; resources</h2>
+  <ul class="q">
+    <li>Who on the team has grown anything? Do you have a horticulture advisor, or access to SRM's agri/biotech labs?</li>
+    <li>This is a capex business, not a laptop business. What is the funding plan for even one pilot room?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">7</span>Housekeeping</h2>
+  <ul class="q">
+    <li>You are registered twice — Trinetra (Mr. Vijay) and Trientra (Mr. Srinath) — with different target-customer answers. One team, one pitch: <b>which version is canonical?</b></li>
+  </ul>
+</section>
+
+<div class="killshot">
+  <div class="lbl">The kill-shot question</div>
+  <p>"What is your cost per gram — and what does Iranian saffron cost per gram?"</p>
+  <div class="after">If they can't answer both, everything else is decoration.</div>
+</div>
+
+<section>
+  <h2>Facts for the mentor table</h2>
+  <div class="facts">
+    <ul>
+      <li>Saffron flowers once a year (autumn) from a corm; corms need cold vernalization and multiply slowly.</li>
+      <li>Kashmiri saffron holds a GI tag (granted 2020); its story and grade command the premium.</li>
+      <li>India consumes far more saffron than it grows; imports are dominated by much cheaper Iranian saffron.</li>
+      <li>Kashmiri saffron retails roughly ₹400–600 per gram; adulteration is widespread across the market.</li>
+      <li>ISO 3632 is the grading standard (crocin, picrocrocin, safranal levels).</li>
+    </ul>
+    <p class="cv">Ballpark figures for grilling context — have the students bring the precise, current numbers. That's the point.</p>
+  </div>
+</section>
+
+<footer>
+  <span>PRARAMBH Deep Dive Workshop · SRM University AP · 28–30 Aug 2026</span>
+  <span>Source: responses-1.xlsx (Final sheet)</span>
+</footer>
+
+</div>

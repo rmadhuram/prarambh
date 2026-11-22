@@ -1,0 +1,273 @@
+<title>Green Genesis Deep Dive</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --paper: #fbfaf7;
+    --ink: #1c2333;
+    --ink-soft: #4a5268;
+    --accent: #e8720c;
+    --accent-soft: #fdeedd;
+    --indigo: #2b3a8c;
+    --indigo-chip: #e6e9f7;
+    --indigo-chip-ink: #2b3a8c;
+    --card: #ffffff;
+    --line: #e2ddd2;
+    --line-strong: #c9c5ba;
+    --warn-bg: #fbe9e4;
+    --warn-ink: #a13c1c;
+    --note-bg: #f1efe8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161f;
+      --ink: #eceef5;
+      --ink-soft: #a0a8bf;
+      --accent: #f68a2e;
+      --accent-soft: #33261a;
+      --indigo: #93a1e8;
+      --indigo-chip: #232a45;
+      --indigo-chip-ink: #aab5ef;
+      --card: #1c1f2c;
+      --line: #2b2f40;
+      --line-strong: #3a3f55;
+      --warn-bg: #3a221c;
+      --warn-ink: #f0a58a;
+      --note-bg: #20232f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161f;
+    --ink: #eceef5;
+    --ink-soft: #a0a8bf;
+    --accent: #f68a2e;
+    --accent-soft: #33261a;
+    --indigo: #93a1e8;
+    --indigo-chip: #232a45;
+    --indigo-chip-ink: #aab5ef;
+    --card: #1c1f2c;
+    --line: #2b2f40;
+    --line-strong: #3a3f55;
+    --warn-bg: #3a221c;
+    --warn-ink: #f0a58a;
+    --note-bg: #20232f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    padding: 0 24px 72px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+
+  a { color: var(--indigo); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .backlink { font-size: 13px; font-weight: 600; text-decoration: none; }
+
+  header { padding: 44px 0 24px; border-bottom: 3px solid var(--ink); }
+  .kicker {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 18px;
+  }
+  h1 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: clamp(36px, 6vw, 54px);
+    font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.02; margin-top: 6px;
+  }
+  .sub { margin-top: 8px; font-size: 16px; color: var(--ink-soft); }
+  .metarow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .chip {
+    font-size: 12px; font-weight: 700; letter-spacing: .03em;
+    padding: 3px 10px; border-radius: 999px;
+    background: var(--indigo-chip); color: var(--indigo-chip-ink);
+  }
+  .chip.note { background: var(--note-bg); color: var(--ink-soft); }
+  .chip.warn { background: var(--warn-bg); color: var(--warn-ink); }
+
+  section { margin-top: 38px; }
+  h2 {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 22px; font-weight: 800; letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  h2 .no { color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  section > p { margin-top: 10px; max-width: 68ch; }
+  .why { margin-top: 10px; font-size: 14px; color: var(--ink-soft); max-width: 68ch; }
+  .why b { color: var(--ink); font-weight: 600; }
+
+  .submitted { margin-top: 14px; display: grid; gap: 10px; }
+  .submitted .row {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; font-size: 14px;
+  }
+  .submitted .lbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 3px;
+  }
+
+  ul.q { margin-top: 12px; list-style: none; display: grid; gap: 8px; }
+  ul.q li {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 11px 15px; font-size: 14.5px;
+  }
+  ul.q li b { font-weight: 600; }
+
+  .killshot {
+    margin-top: 44px;
+    background: var(--accent-soft); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 22px 26px;
+  }
+  .killshot .lbl {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .killshot p {
+    font-family: Archivo, -apple-system, sans-serif;
+    font-size: 21px; font-weight: 700; letter-spacing: -0.01em;
+    margin-top: 8px; line-height: 1.3; text-wrap: balance;
+  }
+  .killshot .after { font-size: 14px; font-weight: 400; color: var(--ink-soft); margin-top: 10px; }
+
+  .facts {
+    margin-top: 14px;
+    background: var(--note-bg); border: 1px solid var(--line-strong); border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .facts ul { margin: 6px 0 0 18px; font-size: 14px; display: grid; gap: 6px; }
+  .facts .cv { font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+
+  footer {
+    margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line-strong);
+    font-size: 12.5px; color: var(--ink-soft);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+
+<div class="wrap">
+
+<header>
+  <a class="backlink" href="https://claude.ai/code/artifact/8d37fe34-032c-4584-ba63-de6354566045">← The PRARAMBH Cohort</a>
+  <div class="kicker">Team Deep Dive · AgriTech</div>
+  <h1>Green Genesis</h1>
+  <p class="sub">A farm-to-consumer marketplace for verified organic produce, with QR-code traceability from farm to plate.</p>
+  <div class="metarow">
+    <span class="chip">Mentor: Mr. Rakesh</span>
+    <span class="chip warn">Potential CoI (Raj) — not used as a deck example</span>
+  </div>
+</header>
+
+<section>
+  <h2>What they submitted</h2>
+  <div class="submitted">
+    <div class="row"><div class="lbl">Problem</div>Consumers can't verify that food labeled organic is genuinely chemical-free; farmers growing natural produce lack direct access to customers and lose margin to middlemen. The organic market lacks trust, transparency, and fair pricing.</div>
+    <div class="row"><div class="lbl">Target customers</div>Health-conscious families · fitness enthusiasts · parents · restaurants, hotels, and cafés · farmers seeking direct access and fair prices</div>
+    <div class="row"><div class="lbl">Solution</div>A digital platform connecting verified organic farmers directly with consumers. QR-code traceability lets customers verify farm origin and quality; farmers receive fairer prices.</div>
+  </div>
+  <p class="why"><b>Read:</b> a well-stated problem — trust really is the organic market's core failure. But the submission stacks three hard businesses into one: a certification/verification service, a two-sided marketplace, and perishable-goods logistics. The word doing all the work is <b>"verified."</b> The grilling should pull on that thread first, then the marketplace mechanics.</p>
+</section>
+
+<section>
+  <h2><span class="no">1</span>The verification claim</h2>
+  <p class="why">Trust is the product. A QR code proves a database entry exists, not that the farm is chemical-free. What actually backs the promise?</p>
+  <ul class="q">
+    <li><b>"Verified" by whom, how?</b> Walk us through verifying one farm: who visits, what do they check, how often?</li>
+    <li>India already has organic certification — NPOP third-party certification and PGS-India peer guarantee, plus FSSAI's Jaivik Bharat label for retail. Are you <b>piggybacking on those, or replacing them?</b> If replacing: why would anyone trust you more?</li>
+    <li>Does verification include lab testing for pesticide residue? What does one test cost, per batch or per farm, and who pays?</li>
+    <li>What happens when a verified farmer cheats once — sprays during a bad pest season? How would you even find out?</li>
+    <li>The QR code shows what the farmer entered. What stops garbage-in, garbage-out?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">2</span>Marketplace cold start</h2>
+  <p class="why">Two-sided marketplaces die at the start: farmers won't join without buyers, buyers won't come without supply.</p>
+  <ul class="q">
+    <li>Which side do you build first, and in <b>which one city or even one neighborhood</b>?</li>
+    <li>How many verified farmers do you need for a credible week-one catalog? How many do you have relationships with today?</li>
+    <li>Their target list is families, fitness enthusiasts, parents, and HoReCa. That's everyone. <b>Pick one.</b> Which segment feels the trust pain most and pays fastest? (Hint: restaurants buy weekly and in volume, but demand consistency; families forgive more but order small.)</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">3</span>Perishability &amp; logistics</h2>
+  <p class="why">Fresh produce delivery has buried well-funded startups. The vegetables don't wait for the app to scale.</p>
+  <ul class="q">
+    <li>Who moves the produce — you, the farmer, or a 3PL? Same-day? Cold chain?</li>
+    <li>What is your expected wastage percentage, and who eats that cost?</li>
+    <li>Unit economics of one order: average order value, delivery cost, platform margin. Does a ₹400 vegetable basket survive a ₹80 delivery?</li>
+    <li>Is a <b>weekly subscription box</b> (predictable demand, batched delivery) a better first product than an on-demand marketplace?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">4</span>Competition &amp; today's alternative</h2>
+  <p class="why">Today's alternative is rarely a startup. Here it's the trusted local vendor, a farmers' market, or a WhatsApp group run by a farmer.</p>
+  <ul class="q">
+    <li>Organic farm-to-consumer has been tried repeatedly in India — subscription farm boxes, community-supported agriculture, organic aisles at BigBasket and every supermarket. <b>Why did the failures fail, and what's different about you?</b></li>
+    <li>A health-conscious family already has a source they half-trust. What makes them switch — and pay more?</li>
+    <li>How much premium over regular produce will your customer actually pay: 20%? 50%? 100%? Have you asked ten of them?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">5</span>Disintermediation — the marketplace leak</h2>
+  <p class="why">The classic failure: the platform makes the introduction, then the two sides cut it out.</p>
+  <ul class="q">
+    <li>After the first delivery, the customer has the farmer's number. <b>Why does order #2 go through you?</b></li>
+    <li>What is your take rate — and after your cut plus logistics, is the farmer's price actually "fairer" than the mandi price? Show the math for one crate of tomatoes.</li>
+    <li>What do you provide that survives the relationship forming: the trust mark? aggregated demand? payments and disputes? Name the thing.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">6</span>Scoping &amp; MVP</h2>
+  <p class="why">The riskiest assumption is behavioral, not technical: will consumers pay a premium for verification they can see? That's testable with almost no code.</p>
+  <ul class="q">
+    <li>What's the smallest slice? For example: <b>10 farmers, one neighborhood, a WhatsApp group, and a weekly box</b> — with you personally doing the farm visits and deliveries. Concierge first, platform later.</li>
+    <li>What can you learn in two weeks with under ₹5,000? (Stand outside one organic store, offer a "farm-verified" box pre-order, count who pays.)</li>
+    <li>Which do you test first: consumers paying the premium, or farmers accepting your terms? What's the pass mark, committed in advance?</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">7</span>Team &amp; resources</h2>
+  <ul class="q">
+    <li>Does anyone on the team know a farmer? How many farm visits have you made since submitting this idea?</li>
+    <li>Who does farm verification credibly — do you have an agronomist, or access to SRM's agriculture department?</li>
+    <li>Verification visits, lab tests, and logistics all cost money before revenue. What does the first month cost, and who funds it?</li>
+  </ul>
+</section>
+
+<div class="killshot">
+  <div class="lbl">The kill-shot question</div>
+  <p>"After your take rate and delivery cost, show us the math where the farmer earns more and the family pays a price they accept — for one crate of tomatoes."</p>
+  <div class="after">"Fair to farmers AND cheap for consumers" is the claim every middleman-removal pitch makes. The spread has to fund the entire company.</div>
+</div>
+
+<section>
+  <h2>Facts for the mentor table</h2>
+  <div class="facts">
+    <ul>
+      <li>India's organic framework: NPOP (third-party certification, APEDA) and PGS-India (peer-guarantee for smallholders); FSSAI's Jaivik Bharat logo governs retail organic labeling.</li>
+      <li>Certification is costly and slow for smallholders — which is exactly why many genuine natural farmers are uncertified, and why "verified" is both the opportunity and the hard part.</li>
+      <li>QR traceability is only as trustworthy as the data source; without inspection or testing behind it, it's marketing.</li>
+      <li>Fresh-produce e-commerce margins are thin and wastage is real; subscription boxes with batched delivery are the survivable entry pattern.</li>
+      <li>Disintermediation is the standard failure mode of direct farm-to-consumer marketplaces.</li>
+    </ul>
+    <p class="cv">Grilling context, not gospel — have the students bring current certification costs and real price spreads. That's the point.</p>
+  </div>
+</section>
+
+<footer>
+  <span>PRARAMBH Deep Dive Workshop · SRM University AP · 28–30 Aug 2026</span>
+  <span>Source: responses-1.xlsx (Final sheet)</span>
+</footer>
+
+</div>
